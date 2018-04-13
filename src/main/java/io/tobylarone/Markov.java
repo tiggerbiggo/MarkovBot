@@ -32,24 +32,24 @@ public class Markov {
      * Builds the index of words. First checks that words are valid
      */
     private void buildIndex() {
-        for(int i = 0; i < input.length - 1; i++) {
+        for (int i = 0; i < input.length - 1; i++) {
             String word = input[i];
             String nextWord = input[i + 1];
-            if(!isValid(word)) {
+            if (!isValid(word)) {
                 continue;
             }
-            if(!isValid(nextWord)) {
+            if (!isValid(nextWord)) {
                 continue;
             }
             word = removeUnwantedStrings(word);
             nextWord = removeUnwantedStrings(nextWord);
 
-            if(!uniqueWords.contains(word)) {
+            if (!uniqueWords.contains(word)) {
                 uniqueWords.add(word);
             }
 
             ArrayList<String> chain = index.get(word);
-            if(chain == null) {
+            if (chain == null) {
                 chain = new ArrayList<String>();
             }
             chain.add(nextWord);
@@ -76,7 +76,7 @@ public class Markov {
      * @return phrase as {@link String}
      */
     private String removeUnwantedStrings(String input) {
-        input = input.replaceAll("(edited)", "");
+        input = input.replaceAll("\\(edited\\)", "");
         return input;
     }
 
@@ -89,16 +89,16 @@ public class Markov {
      * @return boolean
      */
     private boolean isValid(String input) {
-        if(input.startsWith("@")) {
+        if (input.startsWith("@")) {
             return false;
         }
-        if(input.startsWith("http://")) {
+        if (input.startsWith("http://")) {
             return false;
         }
-        if(input.startsWith("https://")) {
+        if (input.startsWith("https://")) {
             return false;
         }
-        switch(input) {
+        switch (input) {
             case "":
                 return false;
             case "#":
@@ -139,8 +139,8 @@ public class Markov {
         sentence.add(next);
         target -= next.length();
 
-        while(target > 0) {
-            if(index.get(next) != null) {
+        while (target > 0) {
+            if (index.get(next) != null) {
                 ArrayList<String> wordChain = index.get(next);
                 next = wordChain.get(rand.nextInt(wordChain.size()));
                 sentence.add(next);
@@ -170,6 +170,15 @@ public class Markov {
      */
     private String toString(List<String> s) {
         return String.join(" ", s);
+    }
+
+    /**
+     * Returns the list of unique words
+     * 
+     * @return list of unique words
+     */
+    public List<String> getUniqueWords() {
+        return this.uniqueWords;
     }
 
 }

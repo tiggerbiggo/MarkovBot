@@ -26,3 +26,6 @@ dbpass=DATABASE_PASSWORD
 * Test: `mvn test`
 * Build: `mvn package`
 * Generate docs: `mvn javadoc:javadoc` output in `/target/site/apidocs/`
+
+## Contributing
+See [contribution guidlines](CONTRIBUTING.md)

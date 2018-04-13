@@ -50,7 +50,7 @@ public class CommandParser {
         MessageChannel channel = e.getChannel();
         User user = e.getAuthor();
         Message message = e.getMessage();
-        switch(args[1]) {
+        switch (args[1]) {
             case "?":
             case "help":
                 util.sendHelp(channel);
@@ -83,11 +83,11 @@ public class CommandParser {
                 contains(channel, user, "oof");
                 return;
         }
-        if(message.getMentionedUsers().size() == 1) {
+        if (message.getMentionedUsers().size() == 1) {
             tagUser(channel, user, message, args, 140);
             return;
         }
-        if(args[1].matches("[0-9]+")) {
+        if (args[1].matches("[0-9]+")) {
             generateWithLimit(channel, user, args);
             return;
         }
@@ -104,7 +104,7 @@ public class CommandParser {
         MessageChannel channel = e.getChannel();
         User user = e.getAuthor();
         Message message = e.getMessage();
-        if(args[1].equals("contains")) {
+        if (args[1].equals("contains")) {
             contains(channel, user, args[2]);
             return;
         }
@@ -139,7 +139,7 @@ public class CommandParser {
             sentence = markov.generateSentence();
             counter++;
         }
-        if(sentence.contains(term)) {
+        if (sentence.contains(term)) {
             util.sendWithTag(channel, user, sentence);
             return;
         } else {
@@ -171,7 +171,7 @@ public class CommandParser {
         System.out.println(targetName);
         System.out.println(id);
         System.out.println(argId);
-        if(argId.equals(id)) {
+        if (argId.equals(id)) {
             util.sendWithTag(channel, user, output);
             return;
         } else {
@@ -184,10 +184,10 @@ public class CommandParser {
      * In progress - pulling history via JDA
      */
     private void history(MessageChannel channel, User user) {
-        if(user.getName().equals("Toby Łarone")) {
+        if (user.getName().equals("Toby Łarone")) {
             List<Message> messages = new ArrayList<>();
             int i = 10000;
-            for(Message aMessage : channel.getIterableHistory().cache(false)) {
+            for (Message aMessage : channel.getIterableHistory().cache(false)) {
                 messages.add(aMessage);
                 if (--i <= 0) {
                     break;

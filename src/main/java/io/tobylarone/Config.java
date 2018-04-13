@@ -21,7 +21,7 @@ public class Config {
         messages = new Properties();
 
         try (InputStream input = getClass().getClassLoader().getResourceAsStream("config.properties")) {
-            if(input != null) {
+            if (input != null) {
                 config.load(input);
             } else {
                 System.out.println("Cannot load config.properties");
@@ -34,7 +34,7 @@ public class Config {
         }
 
         try (InputStream input = getClass().getClassLoader().getResourceAsStream("messages.properties")) {
-            if(input != null) {
+            if (input != null) {
                 messages.load(input);
             } else {
                 System.out.println("Cannot load messages.properties");
@@ -66,6 +66,4 @@ public class Config {
     public String getMessage(String key) {
         return messages.getProperty(key);
     }
-
-
 }
