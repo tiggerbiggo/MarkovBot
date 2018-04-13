@@ -7,6 +7,7 @@
   <groupId>io.tobylarone</groupId>
   <artifactId>discord-markov-bot</artifactId>
   <version>1.0</version>
+  <packaging>jar</packaging>
 
   <name>discord-markov-bot</name>
   <!-- FIXME change it to the project's website -->
@@ -17,7 +18,7 @@
       <id>jcenter</id>
       <url>http://jcenter.bintray.com</url>
     </repository>
-</repositories>
+  </repositories>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -55,6 +56,7 @@
             <show>private</show>
           </configuration>
         </plugin>
+
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>exec-maven-plugin</artifactId>
@@ -63,6 +65,7 @@
             <mainClass>io.tobylarone.App</mainClass>
           </configuration>
         </plugin>
+
         <plugin>
           <artifactId>maven-clean-plugin</artifactId>
           <version>3.0.0</version>
@@ -72,27 +75,54 @@
           <artifactId>maven-resources-plugin</artifactId>
           <version>3.0.2</version>
         </plugin>
+
         <plugin>
           <artifactId>maven-compiler-plugin</artifactId>
           <version>3.7.0</version>
         </plugin>
+
         <plugin>
-          <artifactId>maven-surefire-plugin</artifactId>
-          <version>2.20.1</version>
-        </plugin>
-        <plugin>
-          <artifactId>maven-jar-plugin</artifactId>
-          <version>3.0.2</version>
-        </plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-assembly-plugin</artifactId>
+          <version>3.1.0</version>
+          <configuration>
+            <descriptorRefs>
+              <descriptorRef>jar-with-dependencies</descriptorRef>
+            </descriptorRefs>
+            <archive>
+              <manifest>
+                <mainClass>io.tobylarone.App</mainClass>
+              </manifest>
+            </archive>
+          </configuration>
+          <executions>
+            <execution>
+            <id>make-assembly</id>
+            <phase>package</phase> 
+            <goals>
+              <goal>single</goal>
+            </goals>
+            </execution>
+          </executions>
+			  </plugin>
+
         <plugin>
           <artifactId>maven-install-plugin</artifactId>
           <version>2.5.2</version>
         </plugin>
+        
         <plugin>
           <artifactId>maven-deploy-plugin</artifactId>
           <version>2.8.2</version>
         </plugin>
       </plugins>
     </pluginManagement>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <version>3.1.0</version>
+      </plugin>
+    </plugins>
   </build>
 </project>

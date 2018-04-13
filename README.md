@@ -28,4 +28,4 @@ dbpass=DATABASE_PASSWORD
 * Generate docs: `mvn javadoc:javadoc` output in `/target/site/apidocs/`
 
 ## Contributing
-See [contribution guidlines](CONTRIBUTING.md)
+See [contribution guidelines](CONTRIBUTING.md)

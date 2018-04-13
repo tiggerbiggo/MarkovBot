@@ -69,5 +69,4 @@ public class MarkovTest {
         assertFalse(markov.getUniqueWords().contains("https://www.example.com"));
     }
 
-
 }
