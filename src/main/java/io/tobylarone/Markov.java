@@ -32,28 +32,41 @@ public class Markov {
      * Builds the index of words. First checks that words are valid
      */
     private void buildIndex() {
-        for (int i = 0; i < input.length - 1; i++) {
-            String word = input[i];
-            String nextWord = input[i + 1];
-            if (!isValid(word)) {
-                continue;
+        for (int i = 0; i < input.length; i++) {
+            if (i < input.length - 1) {
+                String word = input[i];
+                String nextWord = input[i + 1];
+                word = removeUnwantedStrings(word);
+                nextWord = removeUnwantedStrings(nextWord);
+                if (!isValid(word)) {
+                    continue;
+                }
+                if (!isValid(nextWord)) {
+                    continue;
+                }
+    
+                if (!uniqueWords.contains(word)) {
+                    uniqueWords.add(word);
+                }
+    
+                ArrayList<String> chain = index.get(word);
+                if (chain == null) {
+                    chain = new ArrayList<String>();
+                }
+                chain.add(nextWord);
+                index.put(word, chain);
+            } else {
+                // Here we are adding the very last word to the index, if it is valid
+                String word = input[i];
+                word = removeUnwantedStrings(word);
+                if (!isValid(word)) {
+                    continue;
+                }
+                if (!uniqueWords.contains(word)) {
+                    uniqueWords.add(word);
+                }
+                index.put(word, new ArrayList<String>());
             }
-            if (!isValid(nextWord)) {
-                continue;
-            }
-            word = removeUnwantedStrings(word);
-            nextWord = removeUnwantedStrings(nextWord);
-
-            if (!uniqueWords.contains(word)) {
-                uniqueWords.add(word);
-            }
-
-            ArrayList<String> chain = index.get(word);
-            if (chain == null) {
-                chain = new ArrayList<String>();
-            }
-            chain.add(nextWord);
-            index.put(word, chain);
         }
     }
 
@@ -77,6 +90,7 @@ public class Markov {
      */
     private String removeUnwantedStrings(String input) {
         input = input.replaceAll("\\(edited\\)", "");
+        input = input.replaceAll("@", "");
         return input;
     }
 
@@ -89,9 +103,6 @@ public class Markov {
      * @return boolean
      */
     private boolean isValid(String input) {
-        if (input.startsWith("@")) {
-            return false;
-        }
         if (input.startsWith("http://")) {
             return false;
         }
@@ -104,6 +115,8 @@ public class Markov {
             case "#":
                 return false;
             case "-":
+                return false;
+            case "@":
                 return false;
             case "(edited)":
                 return false;

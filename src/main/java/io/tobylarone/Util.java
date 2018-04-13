@@ -62,7 +62,7 @@ public class Util {
             + "\n"
             + "Written & maintained by Toby Łarone\n"
             + "\n"
-            + "Source: https://github.com/\n"
+            + "Source: https://github.com/TobyLarone85/MarkovBot\n"
             + "```\n";
             channel.sendMessage(message).queue();
     }

@@ -11,7 +11,7 @@
 Make sure to consider user privacy when creating/extending features that use user data. 
 If a feature makes use of a users data it MUST be opt-in and MUST provide an easy opt-out.
 
-## [Bug reports]
+## Bug reports
 * Before submitting, check that a bug report doesn't already exist.
 * Include detailed steps that can reproduce the bug.
 * Include screenshots of any bugs if possible.
