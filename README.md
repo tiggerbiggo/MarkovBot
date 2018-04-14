@@ -20,6 +20,7 @@ host=HOST
 dbname=DATABASE_NAME
 dbuser=DATABASE_USERNAME
 dbpass=DATABASE_PASSWORD
+dbSSL=false  -- set to true/false
 ```
 * Then import db.sql into your database to build structure
 * Run: `mvn exec:java`

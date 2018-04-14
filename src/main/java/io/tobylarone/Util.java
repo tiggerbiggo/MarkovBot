@@ -36,12 +36,14 @@ public class Util {
             + "!markov mad  --  MARKO ROV GETS MAD (max: 80)\n"
             + "!markov contains term  --  Returns a phrase that contains 'term' (max: 140)\n"
             + "\n"
+            + "!markov status  --  View your opt-in status\n"
+            + "!markov add  --  Add your chat history (since 2018/01/01)\n"
+            + "!markov remove  --  Remove all your chat history (since 2018/01/01)\n"
             + "!markov opt-in  --  Opt-in to allow other users to generate phrase based on your chat\n"
             + "!markov opt-out  --  Opt-out of allowing other users to generate phrase based on your chat\n"
-            + "!markov remove  --  Remove all your chat history (since 2018/01/01)\n"
-            + "!markov add  --  Add your chat history (since 2018/01/01)\n"
             + "\n"
             + "!markov stats  --  Returns some statistics\n"
+            + "!markov ping  --  Returns bot ping\n"
             + "```";
         channel.sendMessage(helpMessage).queue();
     }

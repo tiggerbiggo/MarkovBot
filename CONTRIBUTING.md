@@ -5,7 +5,7 @@
 * Feel free to fix bugs/issues/typos and submit pull requests.
 * Stick to the code style.
 * For new features, don't submit pull requests with no code comments.
-* For new features, don't submit pull requests with no tests.
+* For new features, don't submit pull requests with no testing (automated or manual).
 
 ## Privacy
 Make sure to consider user privacy when creating/extending features that use user data. 
