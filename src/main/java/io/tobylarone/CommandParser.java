@@ -2,6 +2,7 @@ package io.tobylarone;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoField;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -51,7 +52,11 @@ public class CommandParser {
         User user = e.getAuthor();
         Message message = e.getMessage();
         switch (args[1]) {
-            case "test":
+            case "ping":
+                long time = calculatePing(message);
+                util.sendWithTag(channel, user, "Ping: " + time + "ms");
+                return;
+            case "status":
                 util.sendWithTag(channel, user, "TEST");
                 return;
             case "?":
@@ -244,5 +249,19 @@ public class CommandParser {
             + "Total users: " + users.size() + "\n"
             + "Uptime: " + d.toDays() + "days " + (d.toHours()% 60) + "hours " + (d.toMinutes() % 60) + "min\n";
         return message;
+    }
+
+    /**
+     * Calculate ping using the creation time of the !markov ping message received
+     * 
+     * @param message the message used to calculate ping
+     * @return time in milliseconds
+     */
+    private long calculatePing(Message message) {
+        long messageSecond = message.getCreationTime().toEpochSecond();
+        long messageMilli = message.getCreationTime().get(ChronoField.MILLI_OF_SECOND);
+        long messageTime = Long.valueOf(String.valueOf(messageSecond) + String.format("%03d", messageMilli));
+        long now = System.currentTimeMillis();
+        return now - messageTime;
     }
 }
