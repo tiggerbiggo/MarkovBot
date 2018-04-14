@@ -6,6 +6,7 @@ import java.time.temporal.ChronoField;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.tobylarone.database.DatabaseHandler;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.MessageChannel;
 import net.dv8tion.jda.core.entities.User;
@@ -23,6 +24,7 @@ public class CommandParser {
     private Util util;
     private Config config;
     private LocalDateTime startTime;
+    private DatabaseHandler db;
 
     /**
      * CommandParser constructor
@@ -32,6 +34,7 @@ public class CommandParser {
      * @param users list of unique users
      */
     public CommandParser(Markov markov, List<Markov> userMarkov, List<String> users) {
+        db = new DatabaseHandler();
         startTime = LocalDateTime.now();
         this.markov = markov;
         this.userMarkov = userMarkov;
@@ -57,6 +60,7 @@ public class CommandParser {
                 util.sendWithTag(channel, user, "Ping: " + time + "ms");
                 return;
             case "status":
+                String statusMessage = getUserStatus(user);
                 util.sendWithTag(channel, user, "TEST");
                 return;
             case "?":
@@ -69,8 +73,11 @@ public class CommandParser {
             case "history":
                 history(channel, user);
                 return;
-            case "add":
-                util.sendWithTag(channel, user, "TODO add");
+            case "addall":
+                util.sendWithTag(channel, user, "TODO addall");
+                return;
+            case "addself":
+                util.sendWithTag(channel, user, "TODO addself");
                 return;
             case "remove":
                 util.sendWithTag(channel, user, "TODO remove");
@@ -116,6 +123,20 @@ public class CommandParser {
             contains(channel, user, args[2]);
             return;
         }
+    }
+
+    /**
+     * Discovered the users opt-in status which is returned
+     * as a chat message to the user
+     * 
+     * @param user the user to check the status of
+     * @return string status of user opt-in levels
+     */
+    public String getUserStatus(User user) {
+        String message = "You are not included in global markov chains\n"
+                        + "You are not included in individual markov chains\n"
+                        + "You do not allow others to use your chain";
+        return message;
     }
 
     /**
