@@ -155,6 +155,10 @@ public class Markov {
         while (target > 0) {
             if (index.get(next) != null) {
                 ArrayList<String> wordChain = index.get(next);
+                if (wordChain.isEmpty()) {
+                    next = uniqueWords.get(rand.nextInt(uniqueWords.size()));
+                    break;
+                }
                 next = wordChain.get(rand.nextInt(wordChain.size()));
                 sentence.add(next);
                 target -= next.length() + 1;

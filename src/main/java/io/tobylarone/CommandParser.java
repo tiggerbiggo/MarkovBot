@@ -51,6 +51,9 @@ public class CommandParser {
         User user = e.getAuthor();
         Message message = e.getMessage();
         switch (args[1]) {
+            case "test":
+                util.sendWithTag(channel, user, "TEST");
+                return;
             case "?":
             case "help":
                 util.sendHelp(channel);
@@ -131,20 +134,24 @@ public class CommandParser {
      * @param searchTerm the word to search fo
      */
     private void contains(MessageChannel channel, User user, String searchTerm) {
-        String sentence = "";
-        int counter = 0;
-        int limit = markov.getUniqueWordCount() < 50000 ? markov.getUniqueWordCount() : 50000;
-        String term = " " + searchTerm;
-        while (!sentence.contains(term) && counter < limit) {
-            sentence = markov.generateSentence();
-            counter++;
-        }
-        if (sentence.contains(term)) {
-            util.sendWithTag(channel, user, sentence);
-            return;
+        if(markov.getUniqueWords().contains(searchTerm)) {
+            String sentence = "";
+            int counter = 0;
+            int limit = markov.getUniqueWordCount() < 50000 ? markov.getUniqueWordCount() : 50000;
+            String term = " " + searchTerm;
+            while (!sentence.contains(term) && counter < limit) {
+                sentence = markov.generateSentence();
+                counter++;
+            }
+            if (sentence.contains(term)) {
+                util.sendWithTag(channel, user, sentence);
+                return;
+            } else {
+                util.sendWithTag(channel, user, config.getMessage("request.search.not-found"));
+                return;
+            }
         } else {
-            util.sendWithTag(channel, user, config.getMessage("request.search.not-found"));
-            return;
+            util.sendWithTag(channel, user, config.getMessage("request.search.not-in-dictionary"));
         }
     }
 
