@@ -17,11 +17,13 @@ public abstract class DatabaseWrapper<T> {
         db = new DatabaseHandler();
     }
 
-    public abstract T findById(int id);
+    public abstract T findByStringId(String id);
 
     public abstract List<T> findAll();
 
     public abstract void insert(T t);
+
+    public abstract void removeById(int id);
 
 	/**
 	 * @return the db

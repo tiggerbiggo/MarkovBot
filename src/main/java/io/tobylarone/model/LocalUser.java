@@ -16,7 +16,12 @@ public class LocalUser {
         this.id = id;
         this.discordId = discordId;
         this.isOptIn = isOptIn;
-    }
+	}
+	
+	public LocalUser(String discordId) {
+		this.discordId = discordId;
+		this.isOptIn = false;
+	}
 
     @Override
     public String toString() {

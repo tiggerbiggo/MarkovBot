@@ -55,16 +55,15 @@ public class CommandParser {
         MessageChannel channel = e.getChannel();
         User user = e.getAuthor();
         Message message = e.getMessage();
+        String output = "";
         switch (args[1]) {
             case "ping":
                 long time = calculatePing(message);
                 util.sendWithTag(channel, user, "Ping: " + time + "ms");
                 return;
             case "status":
-                String statusMessage = getUserStatus(user);
-                List<LocalUser> users = userRepo.findAll();
-                users.forEach(System.out::println);
-                util.sendWithTag(channel, user, "TEST");
+                output = getUserStatus(user);
+                util.sendWithTag(channel, user, output);
                 return;
             case "?":
             case "help":
@@ -76,14 +75,13 @@ public class CommandParser {
             case "history":
                 history(channel, user);
                 return;
-            case "addall":
-                util.sendWithTag(channel, user, "TODO addall");
-                return;
-            case "addself":
-                util.sendWithTag(channel, user, "TODO addself");
+            case "add":
+                output = add(user) ? "Success" : "Already added";
+                util.sendWithTag(channel, user, output);
                 return;
             case "remove":
-                util.sendWithTag(channel, user, "TODO remove");
+                output = remove(user) ? "Success" : "Already removed";
+                util.sendWithTag(channel, user, output);
                 return;
             case "opt-in":
                 util.sendWithTag(channel, user, "TODO opt-in");
@@ -111,7 +109,44 @@ public class CommandParser {
         }
     }
 
-    /**
+    private boolean remove(User user) {
+        List<LocalUser> users = userRepo.findAll();
+        boolean userFound = false;
+        LocalUser foundUser = null;
+        for (LocalUser u : users) {
+            if (u.getDiscordId().equals(user.getId())) {
+                userFound = true;
+                foundUser = u;
+                break;
+            }
+        }
+        if (userFound) {
+            userRepo.removeById(foundUser.getId());
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    private boolean add(User user) {
+        List<LocalUser> users = userRepo.findAll();
+        boolean alreadyExists = false;
+        for (LocalUser u : users) {
+            if (u.getDiscordId().equals(user.getId())) {
+                alreadyExists = true;
+                break;
+            }
+        }
+        if (!alreadyExists) {
+            LocalUser u = new LocalUser(user.getId());
+            userRepo.insert(u);
+            return true;
+        } else {
+            return false;
+        }
+	}
+
+	/**
      * Method to parse commands, split from arguements of length two for nicer
      * readability
      * 
@@ -135,10 +170,26 @@ public class CommandParser {
      * @param user the user to check the status of
      * @return string status of user opt-in levels
      */
-    public String getUserStatus(User user) {
-        String message = "You are not included in global markov chains\n"
-                        + "You are not included in individual markov chains\n"
-                        + "You do not allow others to use your chain";
+    public String getUserStatus(User inpUser) {
+        List<LocalUser> users = userRepo.findAll();
+        users.forEach(System.out::println);
+        LocalUser user = userRepo.findByStringId(inpUser.getId());
+        String message = "";
+        if (user == null) {
+            message = config.getMessage("status.global.exc") + "\n"
+                    + config.getMessage("status.individual.exc") + "\n"
+                    + config.getMessage("status.3rdparty.exc");
+        } else {
+            if (user.isOptIn()) {
+                message = config.getMessage("status.global.inc") + "\n"
+                        + config.getMessage("status.individual.inc") + "\n"
+                        + config.getMessage("status.3rdparty.inc");
+            } else {
+                message = config.getMessage("status.global.inc") + "\n"
+                        + config.getMessage("status.individual.inc") + "\n"
+                        + config.getMessage("status.3rdparty.exc");
+            }
+        }
         return message;
     }
 

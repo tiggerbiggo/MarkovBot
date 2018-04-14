@@ -17,12 +17,22 @@ public class MessageRepo extends DatabaseWrapper<LocalMessage> {
     }
 
 	@Override
-	public LocalMessage findById(int id) {
+	public LocalMessage findByStringId(String id) {
 		return null;
 	}
 
 	@Override
 	public List<LocalMessage> findAll() {
 		return null;
+	}
+
+	@Override
+	public void insert(LocalMessage t) {
+		
+	}
+
+	@Override
+	public void removeById(int id) {
+		
 	}
 }

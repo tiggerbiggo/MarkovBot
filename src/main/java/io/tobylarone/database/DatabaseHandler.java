@@ -2,11 +2,14 @@ package io.tobylarone.database;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
 import io.tobylarone.Config;
+import io.tobylarone.model.LocalMessage;
+import io.tobylarone.model.LocalUser;
 
 /**
  * DatabaseHandler class
@@ -15,6 +18,7 @@ public class DatabaseHandler {
 
     private Connection conn;
     private Statement s;
+    private PreparedStatement ps;
     private ResultSet r;
 
     /**
@@ -38,6 +42,23 @@ public class DatabaseHandler {
         }
     }
 
+    public ResultSet selectId(String table, String[] inputFields, String targetField, String id) {
+        try {
+            s = conn.createStatement();
+            String fields = String.join(", ", inputFields);
+            String query = "SELECT " + fields + " FROM " + table 
+                            + " WHERE " + targetField + "=" + id;
+
+            if (s.execute(query)) {
+                r = s.getResultSet();
+            }
+
+        } catch (SQLException e) {
+            printException(e);
+        }
+        return r;
+    }
+
     public ResultSet select(String table, String[] inputFields) {
         try {
             s = conn.createStatement();
@@ -54,16 +75,62 @@ public class DatabaseHandler {
         return r;
     }
 
-    public boolean insert() {
+    public <T> void insert(String table, T object) {
+        String query = "";
+        try {
+            if (object instanceof LocalUser) {
+                query = "INSERT INTO users (discord_id, is_opt_in) VALUES (?, ?)";
+                ps = conn.prepareStatement(query);
+                LocalUser user = (LocalUser) object;
+                ps.setString(1, user.getDiscordId());
+                ps.setBoolean(2, user.isOptIn());
+                ps.executeUpdate();
+            } else if (object instanceof LocalMessage) {
+                query = "INSERT INTO messages (user_id, message) VALUES (?, ?)";
+                ps = conn.prepareStatement(query);
+                LocalMessage message = (LocalMessage) object;
+                ps.setInt(1, message.getUserId());
+                ps.setString(2, message.getMessage());
+                ps.executeUpdate();
+            }
+        } catch (SQLException e) {
+            printException(e);
+        } finally {
+            if (ps != null) {
+                try {
+                    ps.close();
+                } catch (SQLException e) {
+                    printException(e);
+                }
+            }
+        }
+    }
 
-        return true;
+    public <T> void removeById(String table, int id) {
+        String query = "";
+        try {
+            query = "DELETE FROM " + table + " WHERE id = ?";
+            ps = conn.prepareStatement(query);
+            ps.setInt(1, id);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            printException(e);
+        } finally {
+            if (ps != null) {
+                try {
+                    ps.close();
+                } catch (SQLException e) {
+                    printException(e);
+                }
+            }
+        }
     }
 
     /**
      * 
      */
     public void closeQuery() {
-        if(r != null) {
+        if (r != null) {
             try {
                 r.close();
             } catch (SQLException e) {
@@ -71,7 +138,7 @@ public class DatabaseHandler {
             }
             r = null;
         }
-        if(s != null) {
+        if (s != null) {
             try {
                 s.close();
             } catch (SQLException e) {
