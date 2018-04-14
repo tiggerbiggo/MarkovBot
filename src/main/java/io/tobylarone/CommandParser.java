@@ -6,7 +6,8 @@ import java.time.temporal.ChronoField;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.tobylarone.database.DatabaseHandler;
+import io.tobylarone.database.LocalUserRepo;
+import io.tobylarone.model.LocalUser;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.MessageChannel;
 import net.dv8tion.jda.core.entities.User;
@@ -24,7 +25,7 @@ public class CommandParser {
     private Util util;
     private Config config;
     private LocalDateTime startTime;
-    private DatabaseHandler db;
+    private LocalUserRepo userRepo;
 
     /**
      * CommandParser constructor
@@ -34,7 +35,7 @@ public class CommandParser {
      * @param users list of unique users
      */
     public CommandParser(Markov markov, List<Markov> userMarkov, List<String> users) {
-        db = new DatabaseHandler();
+        userRepo = new LocalUserRepo();
         startTime = LocalDateTime.now();
         this.markov = markov;
         this.userMarkov = userMarkov;
@@ -61,6 +62,8 @@ public class CommandParser {
                 return;
             case "status":
                 String statusMessage = getUserStatus(user);
+                List<LocalUser> users = userRepo.findAll();
+                users.forEach(System.out::println);
                 util.sendWithTag(channel, user, "TEST");
                 return;
             case "?":

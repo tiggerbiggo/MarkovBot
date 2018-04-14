@@ -12,7 +12,6 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import io.tobylarone.database.DatabaseHandler;
 import net.dv8tion.jda.core.AccountType;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.JDABuilder;
@@ -33,7 +32,6 @@ public class App extends ListenerAdapter {
     private Markov markov;
     private List<Markov> userMarkov;
     private CommandParser parser;
-    private DatabaseHandler db;
 
     /**
      * Main method
@@ -54,7 +52,6 @@ public class App extends ListenerAdapter {
      * individual users. Then initialises the {@link CommandParser}
      */
     public App() {
-        db = new DatabaseHandler();
         util = new Util();
         uniqueUsers = new ArrayList<>();
         userChats = new ArrayList<>();

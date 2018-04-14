@@ -9,7 +9,7 @@ DROP TABLE IF EXISTS `users`;
 CREATE TABLE `users` (
     `id` int(11) UNIQUE NOT NULL,
     `discord_id` varchar(50) NOT NULL,
-    `isOptIn` BIT(1) NOT NULL DEFAULT 0
+    `is_opt_in` BIT(1) NOT NULL DEFAULT 0
 );
 
 DROP TABLE IF EXISTS `messages`;
