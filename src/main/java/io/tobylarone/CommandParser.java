@@ -100,6 +100,10 @@ public class CommandParser {
             case "oof":
                 contains(channel, user, "oof");
                 return;
+            case "thicc":
+                output = thicc();
+                util.sendWithTag(channel, user, output);
+                return;
         }
         if (message.getMentionedUsers().size() == 1) {
             tagUser(channel, user, message, args, 140);
@@ -111,7 +115,13 @@ public class CommandParser {
         }
     }
 
-    /**
+    private String thicc() {
+        String sentence = markov.generateSentence();
+        Thicc thicc = new Thicc(sentence);
+        return thicc.parse();
+	}
+
+	/**
      * Removes a user from the database
      * 
      * @param user the user to remove
