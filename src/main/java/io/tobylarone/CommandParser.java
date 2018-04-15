@@ -76,11 +76,11 @@ public class CommandParser {
                 history(channel, user);
                 return;
             case "add":
-                output = add(user) ? "Success" : "Already added";
+                output = add(user) ? config.getMessage("user.added.success") : config.getMessage("user.added.failure");
                 util.sendWithTag(channel, user, output);
                 return;
             case "remove":
-                output = remove(user) ? "Success" : "Already removed";
+                output = remove(user) ? config.getMessage("user.removed.success") : config.getMessage("user.removed.failure");
                 util.sendWithTag(channel, user, output);
                 return;
             case "opt-in":
@@ -109,6 +109,13 @@ public class CommandParser {
         }
     }
 
+    /**
+     * Removes a user from the database
+     * 
+     * @param user the user to remove
+     * @return true if the user was removed, false if the user
+     * was already removed
+     */
     private boolean remove(User user) {
         List<LocalUser> users = userRepo.findAll();
         boolean userFound = false;
@@ -128,6 +135,13 @@ public class CommandParser {
         }
     }
 
+    /**
+     * Adds a user into the database
+     * 
+     * @param user the user to add
+     * @return true if the operation was successfull, false if 
+     * the user had already been added.
+     */
     private boolean add(User user) {
         List<LocalUser> users = userRepo.findAll();
         boolean alreadyExists = false;
@@ -272,18 +286,36 @@ public class CommandParser {
      */
     private void history(MessageChannel channel, User user) {
         if (user.getName().equals("Toby Łarone")) {
+            util.sendWithTag(channel, user, config.getMessage("history.collection.started"));
+            List<LocalUser> users = userRepo.findAll();
             List<Message> messages = new ArrayList<>();
-            int i = 10000;
+            int i = 50000;
             for (Message aMessage : channel.getIterableHistory().cache(false)) {
-                messages.add(aMessage);
+                if (!aMessage.getContentRaw().startsWith("!markov")) {
+                    boolean isFound = false;
+                    for (LocalUser lu : users) {
+                        if(lu.getDiscordId().equals(aMessage.getAuthor().getId())) {
+                            isFound = true;
+                        }
+                    }
+                    if (isFound) {
+                        messages.add(aMessage);
+                    }
+                }
                 if (--i <= 0) {
                     break;
                 }
             }
-            String a = "Latest: " + messages.get(0).getContentRaw() + "  Date: " + messages.get(0).getCreationTime();
-            String b = "Oldest: " + messages.get(messages.size() - 2).getContentRaw() + "  Date: " + messages.get(messages.size() - 2).getCreationTime();
-            util.sendWithTag(channel, user, a);
-            util.sendWithTag(channel, user, b);
+            if (messages.size() > 2) {
+                int id = messages.size() - 2;
+                String a = "Latest: " + messages.get(0).getContentRaw() + "  Date: " + messages.get(0).getCreationTime();
+                String b = "Oldest(" + id + "): " + messages.get(id).getContentRaw() + "  Date: " + messages.get(id).getCreationTime();
+                System.out.println(messages.get(0).getContentRaw());
+                
+                util.sendWithTag(channel, user, a);
+                util.sendWithTag(channel, user, b);
+            }
+            util.sendWithTag(channel, user, config.getMessage("history.collection.complete"));
         } else {
             util.sendWithTag(channel, user, config.getMessage("request.no-permission"));
         }
