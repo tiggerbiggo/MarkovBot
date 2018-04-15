@@ -37,7 +37,7 @@ public class App extends ListenerAdapter {
      * Main method
      * 
      * @throws LoginException if authentication to discordapp fails
-     * @throws InterruptedException if JDABuilder is blocked during initialisation
+     * @throws InterruptedException if JDABuilder is interrupted during initialisation
      */
     public static void main(String[] args) throws LoginException, InterruptedException {
         App app = new App();
@@ -117,25 +117,28 @@ public class App extends ListenerAdapter {
      */
     @Override
     public void onMessageReceived(MessageReceivedEvent e) {
-        Message message = e.getMessage();
-        MessageChannel channel = e.getChannel();
-        String messageContent = message.getContentRaw();
-        if (messageContent.startsWith("!markov")) {
-            String[] messageSplit = messageContent.split(" ");
-            switch (messageSplit.length) {
-                case 1:
-                    String markovSentence = markov.generateSentence();
-                    util.sendWithTag(channel, e.getAuthor(), markovSentence);
-                    break;
-                case 2:
-                    parser.parseMultiArg(e, messageSplit);
-                    break;
-                case 3:
-                    parser.parseTripleArg(e, messageSplit);
-                    break;
-                default:
-                    util.sendHelp(channel);
-                    break;
+        boolean bot = e.getAuthor().isBot();
+        if(!bot) {
+            Message message = e.getMessage();
+            MessageChannel channel = e.getChannel();
+            String messageContent = message.getContentRaw();
+            if (messageContent.startsWith("!markov")) {
+                String[] messageSplit = messageContent.split(" ");
+                switch (messageSplit.length) {
+                    case 1:
+                        String markovSentence = markov.generateSentence();
+                        util.sendWithTag(channel, e.getAuthor(), markovSentence);
+                        break;
+                    case 2:
+                        parser.parseMultiArg(e, messageSplit);
+                        break;
+                    case 3:
+                        parser.parseTripleArg(e, messageSplit);
+                        break;
+                    default:
+                        util.sendHelp(channel);
+                        break;
+                }
             }
         }
     }

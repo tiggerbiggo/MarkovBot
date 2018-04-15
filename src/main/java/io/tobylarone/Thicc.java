@@ -8,11 +8,17 @@ public class Thicc {
     private String input;
     /**
      * Thicc Constructor
+     * @param input the input string to translate
      */
     public Thicc(String input) {
         this.input = input;
     }
 
+    /**
+     * Replaces normal characters with extra thicc characters
+     * 
+     * @return the output string
+     */
     public String parse() {
         String output = input.toLowerCase();
         output = output.replaceAll("a", "卂");

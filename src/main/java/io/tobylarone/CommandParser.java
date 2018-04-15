@@ -6,7 +6,9 @@ import java.time.temporal.ChronoField;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.tobylarone.database.LocalMessageRepo;
 import io.tobylarone.database.LocalUserRepo;
+import io.tobylarone.model.LocalMessage;
 import io.tobylarone.model.LocalUser;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.MessageChannel;
@@ -26,6 +28,7 @@ public class CommandParser {
     private Config config;
     private LocalDateTime startTime;
     private LocalUserRepo userRepo;
+    private LocalMessageRepo messageRepo;
 
     /**
      * CommandParser constructor
@@ -36,6 +39,7 @@ public class CommandParser {
      */
     public CommandParser(Markov markov, List<Markov> userMarkov, List<String> users) {
         userRepo = new LocalUserRepo();
+        messageRepo = new LocalMessageRepo();
         startTime = LocalDateTime.now();
         this.markov = markov;
         this.userMarkov = userMarkov;
@@ -115,6 +119,11 @@ public class CommandParser {
         }
     }
 
+    /**
+     * Translates a generated sentence to `thicc` chars
+     * 
+     * @return translated string
+     */
     private String thicc() {
         String sentence = markov.generateSentence();
         Thicc thicc = new Thicc(sentence);
@@ -352,34 +361,44 @@ public class CommandParser {
         if (user.getName().equals("Toby Łarone")) {
             util.sendWithTag(channel, user, config.getMessage("history.collection.started"));
             List<LocalUser> users = userRepo.findAll();
-            List<Message> messages = new ArrayList<>();
-            int i = 50000;
+            List<LocalMessage> messages = new ArrayList<>();
+            int historicalMessageLimit = 50000;
+            List<LocalUser> uniqueUsers = new ArrayList<>();
             for (Message aMessage : channel.getIterableHistory().cache(false)) {
                 if (!aMessage.getContentRaw().startsWith("!markov")) {
                     boolean isFound = false;
+                    LocalUser u = null;
                     for (LocalUser lu : users) {
                         if(lu.getDiscordId().equals(aMessage.getAuthor().getId())) {
                             isFound = true;
+                            if(!uniqueUsers.contains(lu)) {
+                                uniqueUsers.add(lu);
+                            }
+                            u = lu;
+                            break;
                         }
                     }
                     if (isFound) {
-                        messages.add(aMessage);
+                        LocalMessage m = new LocalMessage(u.getId(), aMessage.getId(), aMessage.getContentRaw());
+                        m.removeInvalidWords();
+                        messages.add(m);
                     }
                 }
-                if (--i <= 0) {
+                if (--historicalMessageLimit <= 0) {
                     break;
                 }
             }
-            if (messages.size() > 2) {
-                int id = messages.size() - 2;
-                String a = "Latest: " + messages.get(0).getContentRaw() + "  Date: " + messages.get(0).getCreationTime();
-                String b = "Oldest(" + id + "): " + messages.get(id).getContentRaw() + "  Date: " + messages.get(id).getCreationTime();
-                System.out.println(messages.get(0).getId());
+            messageRepo.insertBulk(messages);
+            // if (messages.size() > 2) {
+            //     int id = messages.size() - 2;
+            //     String a = "Latest: " + messages.get(0).getContentRaw() + "  Date: " + messages.get(0).getCreationTime();
+            //     String b = "Oldest(" + id + "): " + messages.get(id).getContentRaw() + "  Date: " + messages.get(id).getCreationTime();
+            //     System.out.println(messages.get(0).getId());
                 
-                util.sendWithTag(channel, user, a);
-                util.sendWithTag(channel, user, b);
-            }
-            util.sendWithTag(channel, user, config.getMessage("history.collection.complete"));
+            //     util.sendWithTag(channel, user, a);
+            //     util.sendWithTag(channel, user, b);
+            // }
+            util.sendWithTag(channel, user, config.getMessage("history.collection.complete") + " (Users: " + uniqueUsers.size() + ")");
         } else {
             util.sendWithTag(channel, user, config.getMessage("request.no-permission"));
         }

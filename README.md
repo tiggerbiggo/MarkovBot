@@ -26,7 +26,7 @@ dbSSL=false  -- set to true/false
 * Run: `mvn exec:java`
 * Test: `mvn test`
 * Build: `mvn package`
-* Generate docs: `mvn javadoc:javadoc` output in `/target/site/apidocs/`
+* Generate docs: `mvn javadoc:javadoc` output in `/target/site/apidocs/` open `index.html` in a browser.
 
 ## Contributing
 See [contribution guidelines](CONTRIBUTING.md)

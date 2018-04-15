@@ -1,5 +1,8 @@
 package io.tobylarone.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * LocalMessage Class
  */
@@ -7,20 +10,53 @@ public class LocalMessage {
 
     private int id;
     private int userId;
-    private String message;
+	private String discordMessageId;
+	private String message;
 
     /**
      * LocalMessage Constructor
      */
-    public LocalMessage(int id, int userId, String message) {
+    public LocalMessage(int id, int userId, String discordMessageId, String message) {
         this.id = id;
-        this.userId = userId;
-        this.message = message;
-    }
+		this.userId = userId;
+		this.discordMessageId = discordMessageId;
+		this.message = message;
+	}
+
+	public LocalMessage(int userId, String discordMessageId, String message) {
+		this.userId = userId;
+		this.discordMessageId = discordMessageId;
+		this.message = message;
+	}
+	
+	public void removeInvalidWords() {
+		String[] words = message.split(" ");
+		List<String> validWords = new ArrayList<>();
+		for (int i = 0; i < words.length; i++) {
+			if (words[i].startsWith("http://")) {
+				continue;
+			}
+			if (words[i].startsWith("https://")) {
+				continue;
+			}
+			switch (words[i]) {
+				case "":
+				case "#":
+				case "-":
+				case "@":
+				case "(edited)":
+					continue;
+			}
+			String w = words[i].replaceAll("\\(edited\\)", "");
+			w = w.replaceAll("@", "");
+			validWords.add(w);
+		}
+		message = String.join(" ", validWords);
+	}
 
     @Override
     public String toString() {
-        String object = id + ", " + userId + ", " + message;
+        String object = id + ", " + userId + ", " + discordMessageId + ", " + message;
         return object;
     }
 
@@ -64,5 +100,19 @@ public class LocalMessage {
 	 */
 	public void setMessage(String message) {
 		this.message = message;
+	}
+
+	/**
+	 * @return the discordMessageId
+	 */
+	public String getDiscordMessageId() {
+		return discordMessageId;
+	}
+
+	/**
+	 * @param discordMessageId the discordMessageId to set
+	 */
+	public void setDiscordMessageId(String discordMessageId) {
+		this.discordMessageId = discordMessageId;
 	}
 }

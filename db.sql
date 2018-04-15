@@ -17,7 +17,8 @@ DROP TABLE IF EXISTS `messages`;
 CREATE TABLE `messages` (
     `id` int(11) NOT NULL,
     `user_id` int (11) NOT NULL,
-    `message` varchar(2000) NOT NULL
+    `message` varchar(2000) NOT NULL,
+    `discord_message_id` varchar(50) NOT NULL
 );
 
 ALTER TABLE `users`

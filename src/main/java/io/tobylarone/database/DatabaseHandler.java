@@ -6,6 +6,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.List;
 
 import io.tobylarone.Config;
 import io.tobylarone.model.LocalMessage;
@@ -81,6 +82,40 @@ public class DatabaseHandler {
         return r;
     }
 
+    public <T> void insertBatch(String table, List<T> list) {
+        String query = "";
+        if (list.get(0) instanceof LocalMessage) {
+            query = "INSERT INTO " + table + " (user_id, message, discord_message_id) VALUES (?, ?, ?)";
+        }
+        try {
+            ps = conn.prepareStatement(query);
+            int counter = 0;
+            for (T item : list) {
+                LocalMessage m = (LocalMessage) item;
+                if (item instanceof LocalMessage) {
+                    ps.setInt(1, m.getUserId());
+                    ps.setString(2, m.getMessage());
+                    ps.setString(3, m.getDiscordMessageId());
+                }
+                ps.addBatch();
+                counter++;
+                if(counter % 1000 == 0 || counter == list.size()) {
+                    ps.executeBatch();
+                }
+            }
+        } catch (SQLException e) {
+            printException(e);
+        } finally {
+            if (ps != null) {
+                try {
+                    ps.close();
+                } catch (SQLException e) {
+                    printException(e);
+                }
+            }
+        }
+    }
+
     /**
      * 
      */
@@ -88,18 +123,19 @@ public class DatabaseHandler {
         String query = "";
         try {
             if (object instanceof LocalUser) {
-                query = "INSERT INTO users (discord_id, is_opt_in) VALUES (?, ?)";
+                query = "INSERT INTO " + table + " (discord_id, is_opt_in) VALUES (?, ?)";
                 ps = conn.prepareStatement(query);
                 LocalUser user = (LocalUser) object;
                 ps.setString(1, user.getDiscordId());
                 ps.setBoolean(2, user.isOptIn());
                 ps.executeUpdate();
             } else if (object instanceof LocalMessage) {
-                query = "INSERT INTO messages (user_id, message) VALUES (?, ?)";
+                query = "INSERT INTO " + table + " (user_id, message, discord_message_id) VALUES (?, ?, ?)";
                 ps = conn.prepareStatement(query);
                 LocalMessage message = (LocalMessage) object;
                 ps.setInt(1, message.getUserId());
                 ps.setString(2, message.getMessage());
+                ps.setString(3, message.getDiscordMessageId());
                 ps.executeUpdate();
             }
         } catch (SQLException e) {
