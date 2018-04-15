@@ -42,6 +42,9 @@ public class DatabaseHandler {
         }
     }
 
+    /**
+     * 
+     */
     public ResultSet selectId(String table, String[] inputFields, String targetField, String id) {
         try {
             s = conn.createStatement();
@@ -59,6 +62,9 @@ public class DatabaseHandler {
         return r;
     }
 
+    /**
+     * 
+     */
     public ResultSet select(String table, String[] inputFields) {
         try {
             s = conn.createStatement();
@@ -75,6 +81,9 @@ public class DatabaseHandler {
         return r;
     }
 
+    /**
+     * 
+     */
     public <T> void insert(String table, T object) {
         String query = "";
         try {
@@ -106,7 +115,35 @@ public class DatabaseHandler {
         }
     }
 
-    public <T> void removeById(String table, int id) {
+    /**
+     * 
+     */
+    public <T, U> void updateByField(String table, String findField, T findValue, String updateField, U updateValue) {
+        String query = "";
+        try {
+            query = "UPDATE " + table + " SET " + updateField + " = ? "
+                    + "WHERE " + findField + " = ?";
+            ps = conn.prepareStatement(query);
+            ps.setObject(1, updateValue);
+            ps.setObject(2, findValue);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            printException(e);
+        } finally {
+            if (ps != null) {
+                try {
+                    ps.close();
+                } catch (SQLException e) {
+                    printException(e);
+                }
+            }
+        }
+    }
+
+    /**
+     * 
+     */
+    public void removeById(String table, int id) {
         String query = "";
         try {
             query = "DELETE FROM " + table + " WHERE id = ?";

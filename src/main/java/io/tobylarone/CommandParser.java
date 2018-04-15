@@ -84,10 +84,12 @@ public class CommandParser {
                 util.sendWithTag(channel, user, output);
                 return;
             case "opt-in":
-                util.sendWithTag(channel, user, "TODO opt-in");
+                output = optIn(user);
+                util.sendWithTag(channel, user, output);
                 return;
             case "opt-out":
-                util.sendWithTag(channel, user, "TODO opt-out");
+                output = optOut(user) ? config.getMessage("user.optout.success") : config.getMessage("user.optout.failure");
+                util.sendWithTag(channel, user, output);
                 return;
             case "stats":
                 util.send(channel, prepStatsMessage());
@@ -158,7 +160,59 @@ public class CommandParser {
         } else {
             return false;
         }
-	}
+    }
+    
+    /**
+     * 
+     */
+    private String optIn(User user) {
+        List<LocalUser> users = userRepo.findAll();
+        boolean alreadyIn = false;
+        boolean userFound = false;
+        for (LocalUser u : users) {
+            if (u.getDiscordId().equals(user.getId())) {
+                userFound = true;
+                if(u.isOptIn()) {
+                    alreadyIn = true;
+                    break;
+                }
+            }
+        }
+        if(userFound) {
+            if (!alreadyIn) {
+                LocalUser u = new LocalUser(user.getId());
+                userRepo.updateOptIn(u.getDiscordId(), true);
+                return config.getMessage("user.optin.success");
+            } else {
+                return config.getMessage("user.optin.failure");
+            }
+        } else {
+            return config.getMessage("user.notfound");
+        }
+    }
+
+    /**
+     * 
+     */
+    private boolean optOut(User user) {
+        List<LocalUser> users = userRepo.findAll();
+        boolean alreadyOut = false;
+        for (LocalUser u : users) {
+            if (u.getDiscordId().equals(user.getId())) {
+                if(!u.isOptIn()) {
+                    alreadyOut = true;
+                    break;
+                }
+            }
+        }
+        if (!alreadyOut) {
+            LocalUser u = new LocalUser(user.getId());
+            userRepo.updateOptIn(u.getDiscordId(), false);
+            return true;
+        } else {
+            return false;
+        }
+    }
 
 	/**
      * Method to parse commands, split from arguements of length two for nicer
@@ -310,7 +364,7 @@ public class CommandParser {
                 int id = messages.size() - 2;
                 String a = "Latest: " + messages.get(0).getContentRaw() + "  Date: " + messages.get(0).getCreationTime();
                 String b = "Oldest(" + id + "): " + messages.get(id).getContentRaw() + "  Date: " + messages.get(id).getCreationTime();
-                System.out.println(messages.get(0).getContentRaw());
+                System.out.println(messages.get(0).getId());
                 
                 util.sendWithTag(channel, user, a);
                 util.sendWithTag(channel, user, b);

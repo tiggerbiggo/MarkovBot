@@ -60,8 +60,7 @@ public class LocalUserRepo extends DatabaseWrapper<LocalUser>{
         getDb().closeQuery();
 
         return user;
-        
-	}
+    }
 
 	@Override
 	public void insert(LocalUser t) {
@@ -72,4 +71,8 @@ public class LocalUserRepo extends DatabaseWrapper<LocalUser>{
     public void removeById(int id) {
         getDb().removeById("users", id);
     }
+
+	public void updateOptIn(String discordId, boolean isOptIn) {
+		getDb().updateByField("users", "discord_id", discordId, "is_opt_in", isOptIn);
+	}
 }
