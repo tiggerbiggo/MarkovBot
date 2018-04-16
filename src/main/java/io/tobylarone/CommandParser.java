@@ -49,6 +49,14 @@ public class CommandParser {
     }
 
     /**
+     * 
+     */
+    public void parseSingle(MessageReceivedEvent e) {
+        String markovSentence = markov.generateSentence();
+        util.sendWithTag(e.getChannel(), e.getAuthor(), markovSentence);
+	}
+
+    /**
      * Method to parse commands, split from arguments of length three for nicer
      * readability
      * 
@@ -77,15 +85,23 @@ public class CommandParser {
                 util.sendAbout(channel);
                 return;
             case "history":
-                history(channel, user);
+                boolean isBackground = false;
+                if (user.getName().equals("Toby Łarone")) {
+                    cmdHelper.history(channel, user, isBackground);
+                    rebuildIndex();
+                    return;
+                }
+                util.sendWithTag(channel, user, config.getMessage("request.no-permission"));
                 return;
             case "add":
-                output = cmdHelper.add(user);
+                output = cmdHelper.add(channel, user);
                 util.sendWithTag(channel, user, output);
+                rebuildIndex();
                 return;
             case "remove":
                 output = cmdHelper.remove(user);
                 util.sendWithTag(channel, user, output);
+                rebuildIndex();
                 return;
             case "opt-in":
                 output = cmdHelper.optIn(user);
@@ -117,6 +133,10 @@ public class CommandParser {
             generateWithLimit(channel, user, args);
             return;
         }
+    }
+
+    private void rebuildIndex() {
+
     }
 
 	/**
@@ -193,8 +213,8 @@ public class CommandParser {
      * Method to allow users to tag another user and generate a sentence only based
      * on the tagged users chain.
      * <p>
-     * Current behaviour only allows for self tagging, in future must check DB for
-     * opt-in users
+     * If the message author is self tagging, continue otherwise, check if the target
+     * user has opted-in to 3rd party tagging
      * 
      * @param channel the channel to send the message to
      * @param user the user to tag the message to
@@ -220,61 +240,6 @@ public class CommandParser {
             }
             util.sendWithTag(channel, user, config.getMessage("tag.user.out"));
             return;
-        }
-    }
-
-    /**
-     * In progress - pulling history via JDA
-     */
-    private void history(MessageChannel channel, User user) {
-        if (user.getName().equals("Toby Łarone")) {
-            util.sendWithTag(channel, user, config.getMessage("history.collection.started"));
-            List<LocalUser> users = userRepo.findAll();
-            List<LocalMessage> messages = new ArrayList<>();
-            int historicalMessageLimit = 10000;
-            List<LocalUser> uniqueUsers = new ArrayList<>();
-            for (Message aMessage : channel.getIterableHistory().cache(false)) {
-                if (!aMessage.getContentRaw().startsWith("!markov")) {
-                    boolean isFound = false;
-                    LocalUser u = null;
-                    for (LocalUser lu : users) {
-                        if(lu.getDiscordId().equals(aMessage.getAuthor().getId())) {
-                            isFound = true;
-                            if(!uniqueUsers.contains(lu)) {
-                                uniqueUsers.add(lu);
-                            }
-                            u = lu;
-                            break;
-                        }
-                    }
-                    if (isFound) {
-                        LocalMessage m = new LocalMessage(u.getId(), aMessage.getId(), aMessage.getContentRaw());
-                        if(!aMessage.getMentionedUsers().isEmpty()) {
-                            for (User mentionedUser : aMessage.getMentionedUsers()) {
-                                m.setMessage(m.getMessage() + " " + mentionedUser.getName());
-                            }
-                        }
-                        m.removeInvalidWords();
-                        messages.add(m);
-                    }
-                }
-                if (--historicalMessageLimit <= 0) {
-                    break;
-                }
-            }
-            messageRepo.insertBulk(messages);
-            // if (messages.size() > 2) {
-            //     int id = messages.size() - 2;
-            //     String a = "Latest: " + messages.get(0).getContentRaw() + "  Date: " + messages.get(0).getCreationTime();
-            //     String b = "Oldest(" + id + "): " + messages.get(id).getContentRaw() + "  Date: " + messages.get(id).getCreationTime();
-            //     System.out.println(messages.get(0).getId());
-                
-            //     util.sendWithTag(channel, user, a);
-            //     util.sendWithTag(channel, user, b);
-            // }
-            util.sendWithTag(channel, user, config.getMessage("history.collection.complete") + " (Users: " + uniqueUsers.size() + ")");
-        } else {
-            util.sendWithTag(channel, user, config.getMessage("request.no-permission"));
         }
     }
 

@@ -101,35 +101,6 @@ public class App extends ListenerAdapter {
                 userChats.set(index, userChats.get(index).concat(" " + m.getMessage()));
             }
         }
-
-        // for (int i = 0; i <=  MAX_FILE_NUM; i++) {
-        //     File input = new File(getClass().getClassLoader().getResource("lobby" + i + ".html").getFile());
-        //     Document doc = Jsoup.parse(input, "UTF-8", "");
-        //     Element log = doc.getElementById("log");
-        //     Elements messages = log.getElementsByClass("msg");
-        //     for (Element message : messages) {
-        //         Elements userElement = message.getElementsByClass("msg-user");
-        //         String user = userElement.get(0).text();
-        //         if (!uniqueUsers.contains(user)) {
-        //             uniqueUsers.add(user);
-        //         }
-
-        //         Elements userMessage = message.getElementsByClass("msg-content");
-        //         String messageContent = "";
-        //         if (userMessage.size() > 0) {
-        //             for (int j = 0; j < userMessage.size(); j++) {
-        //                 messageContent = userMessage.get(j).text();
-        //                 chatList.add(messageContent);
-        //                 int index = uniqueUsers.indexOf(user);
-        //                 if (userChats.isEmpty() || userChats.size() < uniqueUsers.size()) {
-        //                     userChats.add(messageContent);
-        //                 } else {
-        //                     userChats.set(index, userChats.get(index).concat(" " + messageContent));
-        //                 }
-        //             }
-        //         }
-        //     }
-        // }
         return String.join(" ", chatList);
     }
 
@@ -151,8 +122,7 @@ public class App extends ListenerAdapter {
                 String[] messageSplit = messageContent.split(" ");
                 switch (messageSplit.length) {
                     case 1:
-                        String markovSentence = markov.generateSentence();
-                        util.sendWithTag(channel, e.getAuthor(), markovSentence);
+                        parser.parseSingle(e);
                         break;
                     case 2:
                         parser.parseMultiArg(e, messageSplit);

@@ -179,12 +179,12 @@ public class DatabaseHandler {
     /**
      * 
      */
-    public void removeById(String table, int id) {
+    public void removeByField(String table, String field, Object object) {
         String query = "";
         try {
-            query = "DELETE FROM " + table + " WHERE id = ?";
+            query = "DELETE FROM " + table + " WHERE " + field + " = ?";
             ps = conn.prepareStatement(query);
-            ps.setInt(1, id);
+            ps.setObject(1, object);
             ps.executeUpdate();
         } catch (SQLException e) {
             printException(e);

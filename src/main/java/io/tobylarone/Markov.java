@@ -76,7 +76,7 @@ public class Markov {
      * 
      * @param input additional messages to add to index
      */
-    public void rebuildIndex(String input) {
+    public void addToIndex(String input) {
         this.input = Stream.concat(Arrays.stream(this.input), Arrays.stream(input.split(" "))).toArray(String[]::new);
         buildIndex();
     }

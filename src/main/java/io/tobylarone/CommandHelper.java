@@ -3,6 +3,7 @@ package io.tobylarone;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoField;
+import java.util.ArrayList;
 import java.util.List;
 
 import io.tobylarone.database.LocalMessageRepo;
@@ -10,6 +11,7 @@ import io.tobylarone.database.LocalUserRepo;
 import io.tobylarone.model.LocalMessage;
 import io.tobylarone.model.LocalUser;
 import net.dv8tion.jda.core.entities.Message;
+import net.dv8tion.jda.core.entities.MessageChannel;
 import net.dv8tion.jda.core.entities.User;
 
 /**
@@ -20,6 +22,7 @@ public class CommandHelper {
     private Config config;
     private LocalUserRepo userRepo;
     private LocalMessageRepo messageRepo;
+    private Util util;
 
     /**
      * CommandHelper Constructor
@@ -28,6 +31,53 @@ public class CommandHelper {
         config = new Config();
         userRepo = new LocalUserRepo();
         messageRepo = new LocalMessageRepo();
+        util = new Util();
+    }
+
+    /**
+     * In progress - pulling history via JDA
+     */
+    public void history(MessageChannel channel, User user, boolean isBackground) {
+        if (!isBackground) {
+            util.sendWithTag(channel, user, config.getMessage("history.collection.started"));
+        }
+        List<LocalUser> users = userRepo.findAll();
+        List<LocalMessage> messages = new ArrayList<>();
+        int historicalMessageLimit = 10000;
+        List<LocalUser> uniqueUsers = new ArrayList<>();
+        for (Message aMessage : channel.getIterableHistory().cache(false)) {
+            if (!aMessage.getContentRaw().startsWith("!markov")) {
+                boolean isFound = false;
+                LocalUser u = null;
+                for (LocalUser lu : users) {
+                    if(lu.getDiscordId().equals(aMessage.getAuthor().getId())) {
+                        isFound = true;
+                        if(!uniqueUsers.contains(lu)) {
+                            uniqueUsers.add(lu);
+                        }
+                        u = lu;
+                        break;
+                    }
+                }
+                if (isFound) {
+                    LocalMessage m = new LocalMessage(u.getId(), aMessage.getId(), aMessage.getContentRaw());
+                    if(!aMessage.getMentionedUsers().isEmpty()) {
+                        for (User mentionedUser : aMessage.getMentionedUsers()) {
+                            m.setMessage(m.getMessage() + " " + mentionedUser.getName());
+                        }
+                    }
+                    m.removeInvalidWords();
+                    messages.add(m);
+                }
+            }
+            if (--historicalMessageLimit <= 0) {
+                break;
+            }
+        }
+        messageRepo.insertBulk(messages);
+        if (!isBackground) {
+            util.sendWithTag(channel, user, config.getMessage("history.collection.complete") + " (Users: " + uniqueUsers.size() + ")");
+        }
     }
 
     /**
@@ -50,6 +100,7 @@ public class CommandHelper {
         }
         if (userFound) {
             userRepo.removeById(foundUser.getId());
+            messageRepo.removeByUserId(foundUser.getId());
             return config.getMessage("user.removed.success");
         } else {
             return config.getMessage("user.removed.failure");
@@ -62,7 +113,7 @@ public class CommandHelper {
      * @param user the user to add
      * @return string of success or failure
      */
-    public String add(User user) {
+    public String add(MessageChannel channel, User user) {
         List<LocalUser> users = userRepo.findAll();
         boolean alreadyExists = false;
         for (LocalUser u : users) {
@@ -74,6 +125,8 @@ public class CommandHelper {
         if (!alreadyExists) {
             LocalUser u = new LocalUser(user.getId());
             userRepo.insert(u);
+            boolean isBackground = true;
+            history(channel, user, isBackground);
             return config.getMessage("user.added.success");
         } else {
             return config.getMessage("user.added.failure");

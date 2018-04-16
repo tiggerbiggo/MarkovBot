@@ -25,8 +25,6 @@ public abstract class DatabaseWrapper<T> {
 
     public abstract void insert(T t);
 
-    public abstract void removeById(int id);
-
 	/**
 	 * @return the db
 	 */

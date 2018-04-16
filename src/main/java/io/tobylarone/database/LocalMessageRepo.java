@@ -56,9 +56,7 @@ public class LocalMessageRepo extends DatabaseWrapper<LocalMessage> {
 		} catch (SQLException e) {
 			e.printStackTrace();
         }
-        
         getDb().closeQuery();
-
         return messages;
 	}
 
@@ -71,9 +69,8 @@ public class LocalMessageRepo extends DatabaseWrapper<LocalMessage> {
 		getDb().insertBatch("messages", messages);
 	}
 
-	@Override
-	public void removeById(int id) {
-		
+	public void removeByUserId(int id) {
+		getDb().removeByField("messages", "user_id", id);
 	}
 
 	@Override
