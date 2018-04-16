@@ -12,6 +12,10 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import io.tobylarone.database.LocalMessageRepo;
+import io.tobylarone.database.LocalUserRepo;
+import io.tobylarone.model.LocalMessage;
+import io.tobylarone.model.LocalUser;
 import net.dv8tion.jda.core.AccountType;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.JDABuilder;
@@ -77,34 +81,55 @@ public class App extends ListenerAdapter {
      */
     public String loadChat() throws IOException {
         List<String> chatList = new ArrayList<>();
-        for (int i = 0; i <=  MAX_FILE_NUM; i++) {
-            File input = new File(getClass().getClassLoader().getResource("lobby" + i + ".html").getFile());
-            Document doc = Jsoup.parse(input, "UTF-8", "");
-            Element log = doc.getElementById("log");
-            Elements messages = log.getElementsByClass("msg");
-            for (Element message : messages) {
-                Elements userElement = message.getElementsByClass("msg-user");
-                String user = userElement.get(0).text();
-                if (!uniqueUsers.contains(user)) {
-                    uniqueUsers.add(user);
-                }
+        LocalUserRepo userRepo = new LocalUserRepo();
+        LocalMessageRepo messageRepo = new LocalMessageRepo();
+        List<LocalUser> users = userRepo.findAll();
+        List<LocalMessage> messages = messageRepo.findAll();
 
-                Elements userMessage = message.getElementsByClass("msg-content");
-                String messageContent = "";
-                if (userMessage.size() > 0) {
-                    for (int j = 0; j < userMessage.size(); j++) {
-                        messageContent = userMessage.get(j).text();
-                        chatList.add(messageContent);
-                        int index = uniqueUsers.indexOf(user);
-                        if (userChats.isEmpty() || userChats.size() < uniqueUsers.size()) {
-                            userChats.add(messageContent);
-                        } else {
-                            userChats.set(index, userChats.get(index).concat(" " + messageContent));
-                        }
-                    }
-                }
+        for (LocalUser u : users) {
+            if (!uniqueUsers.contains(u.getDiscordId())) {
+                uniqueUsers.add(u.getDiscordId());
             }
         }
+        for (LocalMessage m : messages) {
+            chatList.add(m.getMessage());
+            LocalUser user = userRepo.findById(m.getUserId());
+            int index = uniqueUsers.indexOf(user.getDiscordId());
+            if (userChats.isEmpty() || userChats.size() < uniqueUsers.size()) {
+                userChats.add(m.getMessage());
+            } else {
+                userChats.set(index, userChats.get(index).concat(" " + m.getMessage()));
+            }
+        }
+
+        // for (int i = 0; i <=  MAX_FILE_NUM; i++) {
+        //     File input = new File(getClass().getClassLoader().getResource("lobby" + i + ".html").getFile());
+        //     Document doc = Jsoup.parse(input, "UTF-8", "");
+        //     Element log = doc.getElementById("log");
+        //     Elements messages = log.getElementsByClass("msg");
+        //     for (Element message : messages) {
+        //         Elements userElement = message.getElementsByClass("msg-user");
+        //         String user = userElement.get(0).text();
+        //         if (!uniqueUsers.contains(user)) {
+        //             uniqueUsers.add(user);
+        //         }
+
+        //         Elements userMessage = message.getElementsByClass("msg-content");
+        //         String messageContent = "";
+        //         if (userMessage.size() > 0) {
+        //             for (int j = 0; j < userMessage.size(); j++) {
+        //                 messageContent = userMessage.get(j).text();
+        //                 chatList.add(messageContent);
+        //                 int index = uniqueUsers.indexOf(user);
+        //                 if (userChats.isEmpty() || userChats.size() < uniqueUsers.size()) {
+        //                     userChats.add(messageContent);
+        //                 } else {
+        //                     userChats.set(index, userChats.get(index).concat(" " + messageContent));
+        //                 }
+        //             }
+        //         }
+        //     }
+        // }
         return String.join(" ", chatList);
     }
 

@@ -2,6 +2,7 @@ package io.tobylarone.database;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 import io.tobylarone.model.LocalMessage;
@@ -40,7 +41,25 @@ public class LocalMessageRepo extends DatabaseWrapper<LocalMessage> {
 
 	@Override
 	public List<LocalMessage> findAll() {
-		return null;
+		List<LocalMessage> messages = new ArrayList<>();
+        String[] fields = {"*"};
+        ResultSet results = getDb().select("messages", fields);
+        try {
+			while(results.next()) {
+                int id = results.getInt("id");
+                int userId = results.getInt("user_id");
+				String discordMessageId = results.getString("discord_message_id");
+				String messageValue = results.getString("message");
+				LocalMessage message = new LocalMessage(id, userId, discordMessageId, messageValue);
+                messages.add(message);
+            }
+		} catch (SQLException e) {
+			e.printStackTrace();
+        }
+        
+        getDb().closeQuery();
+
+        return messages;
 	}
 
 	@Override
@@ -55,5 +74,10 @@ public class LocalMessageRepo extends DatabaseWrapper<LocalMessage> {
 	@Override
 	public void removeById(int id) {
 		
+	}
+
+	@Override
+	public LocalMessage findById(int id) {
+		return null;
 	}
 }

@@ -46,7 +46,7 @@ public class DatabaseHandler {
     /**
      * 
      */
-    public ResultSet selectId(String table, String[] inputFields, String targetField, String id) {
+    public ResultSet selectId(String table, String[] inputFields, String targetField, Object id) {
         try {
             s = conn.createStatement();
             String fields = String.join(", ", inputFields);

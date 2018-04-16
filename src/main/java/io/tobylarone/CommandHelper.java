@@ -32,6 +32,7 @@ public class CommandHelper {
 
     /**
      * Removes a user from the database
+     * TODO remove all messages associated with user
      * 
      * @param user the user to remove
      * @return string of success or failure
@@ -147,7 +148,6 @@ public class CommandHelper {
      * @return string status of user opt-in levels
      */
     public String getUserStatus(User inpUser) {
-        List<LocalUser> users = userRepo.findAll();
         LocalUser user = userRepo.findByStringId(inpUser.getId());
         String message = "";
         if (user == null) {
@@ -205,6 +205,7 @@ public class CommandHelper {
         LocalUser user = userRepo.findByStringId(message.getAuthor().getId());
         if (user != null) {
             LocalMessage m = new LocalMessage(user.getId(), message.getId(), message.getContentRaw());
+            m.removeInvalidWords();
             messageRepo.insert(m);
         }
 	}

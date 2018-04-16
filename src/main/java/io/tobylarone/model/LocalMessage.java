@@ -49,6 +49,14 @@ public class LocalMessage {
 			}
 			String w = words[i].replaceAll("\\(edited\\)", "");
 			w = w.replaceAll("@", "");
+			w = w.replaceAll("::", "");
+			w = w.replaceAll("`", "");
+			if (w.matches("<[0-9]+>")) {
+				continue;
+			}
+			if (w.equals("") || w.equals(" ")) {
+				continue;
+			}
 			validWords.add(w);
 		}
 		message = String.join(" ", validWords);

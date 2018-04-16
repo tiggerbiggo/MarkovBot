@@ -1,8 +1,6 @@
 package io.tobylarone;
 
-import java.time.Duration;
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoField;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -205,19 +203,21 @@ public class CommandParser {
      * @param length length of the message to generate
      */
     private void tagUser(MessageChannel channel, User user, Message message, String[] args, int length) {
-        String targetName = message.getMentionedUsers().get(0).getName();
+        String targetName = message.getMentionedUsers().get(0).getId();
         String id = message.getAuthor().getId();
         String argId = args[1].replace("<@", "");
         argId = argId.replace(">", "");
         int index = users.indexOf(targetName);
         String output = userMarkov.get(index).generateSentence(length);
-        System.out.println(targetName);
-        System.out.println(id);
-        System.out.println(argId);
         if (argId.equals(id)) {
             util.sendWithTag(channel, user, output);
             return;
         } else {
+            LocalUser searchUser = userRepo.findByStringId(argId);
+            if (searchUser != null && searchUser.isOptIn()) {
+                util.sendWithTag(channel, user, output);
+            return;
+            }
             util.sendWithTag(channel, user, config.getMessage("tag.user.out"));
             return;
         }
@@ -249,6 +249,11 @@ public class CommandParser {
                     }
                     if (isFound) {
                         LocalMessage m = new LocalMessage(u.getId(), aMessage.getId(), aMessage.getContentRaw());
+                        if(!aMessage.getMentionedUsers().isEmpty()) {
+                            for (User mentionedUser : aMessage.getMentionedUsers()) {
+                                m.setMessage(m.getMessage() + " " + mentionedUser.getName());
+                            }
+                        }
                         m.removeInvalidWords();
                         messages.add(m);
                     }

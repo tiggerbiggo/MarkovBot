@@ -75,4 +75,25 @@ public class LocalUserRepo extends DatabaseWrapper<LocalUser>{
 	public void updateOptIn(String discordId, boolean isOptIn) {
 		getDb().updateByField("users", "discord_id", discordId, "is_opt_in", isOptIn);
 	}
+
+	@Override
+	public LocalUser findById(int id) {
+        LocalUser user = null;
+        String[] fields = {"*"};
+        ResultSet result = getDb().selectId("users", fields, "id", id);
+        try {
+            while (result.next()) {
+                int resid = result.getInt("id");
+                String discordId = result.getString("discord_id");
+                boolean isOptIn = result.getBoolean("is_opt_in");
+                user = new LocalUser(resid, discordId, isOptIn);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        getDb().closeQuery();
+
+        return user;
+	}
 }
