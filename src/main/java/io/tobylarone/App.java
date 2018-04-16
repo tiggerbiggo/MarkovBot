@@ -139,6 +139,8 @@ public class App extends ListenerAdapter {
                         util.sendHelp(channel);
                         break;
                 }
+            } else {
+                parser.saveMessage(message);
             }
         }
     }

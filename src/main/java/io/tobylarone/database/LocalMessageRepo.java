@@ -45,7 +45,7 @@ public class LocalMessageRepo extends DatabaseWrapper<LocalMessage> {
 
 	@Override
 	public void insert(LocalMessage t) {
-		
+		getDb().insert("messages", t);
 	}
 
 	public void insertBulk(List<LocalMessage> messages) {

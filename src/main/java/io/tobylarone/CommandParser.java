@@ -29,6 +29,7 @@ public class CommandParser {
     private LocalDateTime startTime;
     private LocalUserRepo userRepo;
     private LocalMessageRepo messageRepo;
+    private CommandHelper cmdHelper;
 
     /**
      * CommandParser constructor
@@ -38,6 +39,7 @@ public class CommandParser {
      * @param users list of unique users
      */
     public CommandParser(Markov markov, List<Markov> userMarkov, List<String> users) {
+        cmdHelper = new CommandHelper();
         userRepo = new LocalUserRepo();
         messageRepo = new LocalMessageRepo();
         startTime = LocalDateTime.now();
@@ -62,11 +64,11 @@ public class CommandParser {
         String output = "";
         switch (args[1]) {
             case "ping":
-                long time = calculatePing(message);
+                long time = cmdHelper.calculatePing(message);
                 util.sendWithTag(channel, user, "Ping: " + time + "ms");
                 return;
             case "status":
-                output = getUserStatus(user);
+                output = cmdHelper.getUserStatus(user);
                 util.sendWithTag(channel, user, output);
                 return;
             case "?":
@@ -80,23 +82,23 @@ public class CommandParser {
                 history(channel, user);
                 return;
             case "add":
-                output = add(user) ? config.getMessage("user.added.success") : config.getMessage("user.added.failure");
+                output = cmdHelper.add(user);
                 util.sendWithTag(channel, user, output);
                 return;
             case "remove":
-                output = remove(user) ? config.getMessage("user.removed.success") : config.getMessage("user.removed.failure");
+                output = cmdHelper.remove(user);
                 util.sendWithTag(channel, user, output);
                 return;
             case "opt-in":
-                output = optIn(user);
+                output = cmdHelper.optIn(user);
                 util.sendWithTag(channel, user, output);
                 return;
             case "opt-out":
-                output = optOut(user) ? config.getMessage("user.optout.success") : config.getMessage("user.optout.failure");
+                output = cmdHelper.optOut(user);
                 util.sendWithTag(channel, user, output);
                 return;
             case "stats":
-                util.send(channel, prepStatsMessage());
+                util.send(channel, cmdHelper.prepStatsMessage(startTime, markov.getUniqueWordCount(), users.size()));
                 return;
             case "mad":
                 util.sendWithTag(channel, user, markov.generateSentence(80).toUpperCase() + "!");
@@ -119,120 +121,6 @@ public class CommandParser {
         }
     }
 
-    /**
-     * Translates a generated sentence to `thicc` chars
-     * 
-     * @return translated string
-     */
-    private String thicc() {
-        String sentence = markov.generateSentence();
-        Thicc thicc = new Thicc(sentence);
-        return thicc.parse();
-	}
-
-	/**
-     * Removes a user from the database
-     * 
-     * @param user the user to remove
-     * @return true if the user was removed, false if the user
-     * was already removed
-     */
-    private boolean remove(User user) {
-        List<LocalUser> users = userRepo.findAll();
-        boolean userFound = false;
-        LocalUser foundUser = null;
-        for (LocalUser u : users) {
-            if (u.getDiscordId().equals(user.getId())) {
-                userFound = true;
-                foundUser = u;
-                break;
-            }
-        }
-        if (userFound) {
-            userRepo.removeById(foundUser.getId());
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    /**
-     * Adds a user into the database
-     * 
-     * @param user the user to add
-     * @return true if the operation was successfull, false if 
-     * the user had already been added.
-     */
-    private boolean add(User user) {
-        List<LocalUser> users = userRepo.findAll();
-        boolean alreadyExists = false;
-        for (LocalUser u : users) {
-            if (u.getDiscordId().equals(user.getId())) {
-                alreadyExists = true;
-                break;
-            }
-        }
-        if (!alreadyExists) {
-            LocalUser u = new LocalUser(user.getId());
-            userRepo.insert(u);
-            return true;
-        } else {
-            return false;
-        }
-    }
-    
-    /**
-     * 
-     */
-    private String optIn(User user) {
-        List<LocalUser> users = userRepo.findAll();
-        boolean alreadyIn = false;
-        boolean userFound = false;
-        for (LocalUser u : users) {
-            if (u.getDiscordId().equals(user.getId())) {
-                userFound = true;
-                if(u.isOptIn()) {
-                    alreadyIn = true;
-                    break;
-                }
-            }
-        }
-        if(userFound) {
-            if (!alreadyIn) {
-                LocalUser u = new LocalUser(user.getId());
-                userRepo.updateOptIn(u.getDiscordId(), true);
-                return config.getMessage("user.optin.success");
-            } else {
-                return config.getMessage("user.optin.failure");
-            }
-        } else {
-            return config.getMessage("user.notfound");
-        }
-    }
-
-    /**
-     * 
-     */
-    private boolean optOut(User user) {
-        List<LocalUser> users = userRepo.findAll();
-        boolean alreadyOut = false;
-        for (LocalUser u : users) {
-            if (u.getDiscordId().equals(user.getId())) {
-                if(!u.isOptIn()) {
-                    alreadyOut = true;
-                    break;
-                }
-            }
-        }
-        if (!alreadyOut) {
-            LocalUser u = new LocalUser(user.getId());
-            userRepo.updateOptIn(u.getDiscordId(), false);
-            return true;
-        } else {
-            return false;
-        }
-    }
-
 	/**
      * Method to parse commands, split from arguements of length two for nicer
      * readability
@@ -251,34 +139,15 @@ public class CommandParser {
     }
 
     /**
-     * Discovered the users opt-in status which is returned
-     * as a chat message to the user
+     * Translates a generated sentence to `thicc` chars
      * 
-     * @param user the user to check the status of
-     * @return string status of user opt-in levels
+     * @return translated string
      */
-    public String getUserStatus(User inpUser) {
-        List<LocalUser> users = userRepo.findAll();
-        users.forEach(System.out::println);
-        LocalUser user = userRepo.findByStringId(inpUser.getId());
-        String message = "";
-        if (user == null) {
-            message = config.getMessage("status.global.exc") + "\n"
-                    + config.getMessage("status.individual.exc") + "\n"
-                    + config.getMessage("status.3rdparty.exc");
-        } else {
-            if (user.isOptIn()) {
-                message = config.getMessage("status.global.inc") + "\n"
-                        + config.getMessage("status.individual.inc") + "\n"
-                        + config.getMessage("status.3rdparty.inc");
-            } else {
-                message = config.getMessage("status.global.inc") + "\n"
-                        + config.getMessage("status.individual.inc") + "\n"
-                        + config.getMessage("status.3rdparty.exc");
-            }
-        }
-        return message;
-    }
+    private String thicc() {
+        String sentence = markov.generateSentence();
+        Thicc thicc = new Thicc(sentence);
+        return thicc.parse();
+	}
 
     /**
      * Method to return messages that contain a specific word
@@ -362,7 +231,7 @@ public class CommandParser {
             util.sendWithTag(channel, user, config.getMessage("history.collection.started"));
             List<LocalUser> users = userRepo.findAll();
             List<LocalMessage> messages = new ArrayList<>();
-            int historicalMessageLimit = 50000;
+            int historicalMessageLimit = 10000;
             List<LocalUser> uniqueUsers = new ArrayList<>();
             for (Message aMessage : channel.getIterableHistory().cache(false)) {
                 if (!aMessage.getContentRaw().startsWith("!markov")) {
@@ -425,33 +294,7 @@ public class CommandParser {
         return;
     }
 
-    /**
-     * Generates the bot statistics message
-     * 
-     * @return message as {@link String}
-     */
-    private String prepStatsMessage() {
-        LocalDateTime now = LocalDateTime.now();
-        Duration d = Duration.between(startTime, now);
-        String message = "\n"
-            + "STATISTICS: \n"
-            + "Total unique word count: " + markov.getUniqueWordCount() + "\n"
-            + "Total users: " + users.size() + "\n"
-            + "Uptime: " + d.toDays() + "days " + (d.toHours()% 60) + "hours " + (d.toMinutes() % 60) + "min\n";
-        return message;
-    }
-
-    /**
-     * Calculate ping using the creation time of the !markov ping message received
-     * 
-     * @param message the message used to calculate ping
-     * @return time in milliseconds
-     */
-    private long calculatePing(Message message) {
-        long messageSecond = message.getCreationTime().toEpochSecond();
-        long messageMilli = message.getCreationTime().get(ChronoField.MILLI_OF_SECOND);
-        long messageTime = Long.valueOf(String.valueOf(messageSecond) + String.format("%03d", messageMilli));
-        long now = System.currentTimeMillis();
-        return now - messageTime;
-    }
+	public void saveMessage(Message message) {
+        cmdHelper.saveMessage(message);
+	}
 }

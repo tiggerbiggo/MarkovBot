@@ -15,10 +15,10 @@ CREATE TABLE `users` (
 DROP TABLE IF EXISTS `messages`;
 
 CREATE TABLE `messages` (
-    `id` int(11) NOT NULL,
+    `id` int(11) UNIQUE NOT NULL,
     `user_id` int (11) NOT NULL,
     `message` varchar(2000) NOT NULL,
-    `discord_message_id` varchar(50) NOT NULL
+    `discord_message_id` varchar(50) NOT NULL UNIQUE
 );
 
 ALTER TABLE `users`
