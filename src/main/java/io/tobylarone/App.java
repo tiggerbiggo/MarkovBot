@@ -1,21 +1,7 @@
 package io.tobylarone;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
 import javax.security.auth.login.LoginException;
 
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-
-import io.tobylarone.database.LocalMessageRepo;
-import io.tobylarone.database.LocalUserRepo;
-import io.tobylarone.model.LocalMessage;
-import io.tobylarone.model.LocalUser;
 import net.dv8tion.jda.core.AccountType;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.JDABuilder;
@@ -28,13 +14,7 @@ import net.dv8tion.jda.core.hooks.ListenerAdapter;
  * App class 
  */
 public class App extends ListenerAdapter {
-    private final int MAX_FILE_NUM = 6;
-    private List<String> uniqueUsers;
     private Util util;
-    private String chatlog;
-    private List<String> userChats;
-    private Markov markov;
-    private List<Markov> userMarkov;
     private CommandParser parser;
 
     /**
@@ -51,57 +31,11 @@ public class App extends ListenerAdapter {
     }
     
     /**
-     * Constructor for app. Loads the known chat history
-     * and prepares {@link Markov} chains for all users and
-     * individual users. Then initialises the {@link CommandParser}
+     * Constructor for app. Then initialises the {@link CommandParser}
      */
     public App() {
         util = new Util();
-        uniqueUsers = new ArrayList<>();
-        userChats = new ArrayList<>();
-        try {
-            chatlog = loadChat();
-		} catch (IOException e) {
-            e.printStackTrace();
-		}
-        markov = new Markov(chatlog);
-        userMarkov = new ArrayList<>();
-        for(String s : userChats) {
-            userMarkov.add(new Markov(s));
-        }
-        chatlog = "";
-        userChats.clear();
-        parser = new CommandParser(markov, userMarkov, uniqueUsers);
-    }
-
-    /**
-     * Loads from exported files. Will be removed in due course
-     * 
-     * @return chat history as a {@link String}
-     */
-    public String loadChat() throws IOException {
-        List<String> chatList = new ArrayList<>();
-        LocalUserRepo userRepo = new LocalUserRepo();
-        LocalMessageRepo messageRepo = new LocalMessageRepo();
-        List<LocalUser> users = userRepo.findAll();
-        List<LocalMessage> messages = messageRepo.findAll();
-
-        for (LocalUser u : users) {
-            if (!uniqueUsers.contains(u.getDiscordId())) {
-                uniqueUsers.add(u.getDiscordId());
-            }
-        }
-        for (LocalMessage m : messages) {
-            chatList.add(m.getMessage());
-            LocalUser user = userRepo.findById(m.getUserId());
-            int index = uniqueUsers.indexOf(user.getDiscordId());
-            if (userChats.isEmpty() || userChats.size() < uniqueUsers.size()) {
-                userChats.add(m.getMessage());
-            } else {
-                userChats.set(index, userChats.get(index).concat(" " + m.getMessage()));
-            }
-        }
-        return String.join(" ", chatList);
+        parser = new CommandParser();
     }
 
     /**

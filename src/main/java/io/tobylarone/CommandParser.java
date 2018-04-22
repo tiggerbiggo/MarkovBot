@@ -8,6 +8,8 @@ import io.tobylarone.database.LocalMessageRepo;
 import io.tobylarone.database.LocalUserRepo;
 import io.tobylarone.model.LocalMessage;
 import io.tobylarone.model.LocalUser;
+import net.dv8tion.jda.core.OnlineStatus;
+import net.dv8tion.jda.core.entities.Game;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.MessageChannel;
 import net.dv8tion.jda.core.entities.User;
@@ -21,7 +23,7 @@ public class CommandParser {
 
     private Markov markov;
     private List<Markov> userMarkov;
-    private List<String> users;
+    private List<String> uniqueUsers;
     private Util util;
     private Config config;
     private LocalDateTime startTime;
@@ -36,16 +38,53 @@ public class CommandParser {
      * @param userMarkov list of markov chains for individual users
      * @param users list of unique users
      */
-    public CommandParser(Markov markov, List<Markov> userMarkov, List<String> users) {
+    public CommandParser() {
         cmdHelper = new CommandHelper();
         userRepo = new LocalUserRepo();
-        messageRepo = new LocalMessageRepo();
-        startTime = LocalDateTime.now();
-        this.markov = markov;
-        this.userMarkov = userMarkov;
-        this.users = users;
+        messageRepo = new LocalMessageRepo();        
         util = new Util();
         config = new Config();
+        startTime = LocalDateTime.now();
+        loadChat();
+    }
+
+    /**
+     * Loads the known chat history from database
+     * and prepares {@link Markov} chains for all users and
+     * individual users.
+     */
+    private void loadChat() {
+        long loadTimeStart = System.nanoTime();
+        List<String> chatList = new ArrayList<>();
+        List<String> userChats = new ArrayList<>();
+        List<LocalUser> knownUsers = userRepo.findAll();
+        List<LocalMessage> messages = messageRepo.findAll();
+        uniqueUsers = new ArrayList<>();
+
+        for (LocalUser u : knownUsers) {
+            if (!uniqueUsers.contains(u.getDiscordId())) {
+                uniqueUsers.add(u.getDiscordId());
+            }
+        }
+        for (LocalMessage m : messages) {
+            chatList.add(m.getMessage());
+            LocalUser user = userRepo.findById(m.getUserId());
+            int index = uniqueUsers.indexOf(user.getDiscordId());
+            if (userChats.isEmpty() || userChats.size() < uniqueUsers.size()) {
+                userChats.add(m.getMessage());
+            } else {
+                userChats.set(index, userChats.get(index).concat(" " + m.getMessage()));
+            }
+        }
+        String chatlog =  String.join(" ", chatList);
+
+        markov = new Markov(chatlog);
+        userMarkov = new ArrayList<>();
+        for(String s : userChats) {
+            userMarkov.add(new Markov(s));
+        }
+        long loadTimeEnd = System.nanoTime();
+        System.out.println("Markov Load Time: " + (loadTimeEnd - loadTimeStart) / 1000000 + "ms");
     }
 
     /**
@@ -71,6 +110,7 @@ public class CommandParser {
         switch (args[1]) {
             case "ping":
                 long time = cmdHelper.calculatePing(message);
+                time = e.getJDA().getPing();
                 util.sendWithTag(channel, user, "Ping: " + time + "ms");
                 return;
             case "status":
@@ -85,13 +125,25 @@ public class CommandParser {
                 util.sendAbout(channel);
                 return;
             case "history":
-                boolean isBackground = false;
                 if (user.getName().equals("Toby Łarone")) {
-                    cmdHelper.history(channel, user, isBackground);
+                    setIdle(e, true);
+                    e.getJDA().getPresence().setGame(Game.playing("Loading history..."));
+                    cmdHelper.history(channel, user, true);
                     rebuildIndex();
+                    e.getJDA().getPresence().setGame(null);
+                    setIdle(e, false);
                     return;
                 }
                 util.sendWithTag(channel, user, config.getMessage("request.no-permission"));
+                return;
+            case "rebuild":
+                if (user.getName().equals("Toby Łarone")) {
+                    setIdle(e, true);
+                    rebuildIndex();
+                    setIdle(e, false);
+                    return;
+                }
+                util.sendWithTag(channel, user, config.getMessage("request.no-premission"));
                 return;
             case "add":
                 output = cmdHelper.add(channel, user);
@@ -112,7 +164,7 @@ public class CommandParser {
                 util.sendWithTag(channel, user, output);
                 return;
             case "stats":
-                util.send(channel, cmdHelper.prepStatsMessage(startTime, markov.getUniqueWordCount(), users.size()));
+                util.send(channel, cmdHelper.prepStatsMessage(startTime, markov.getUniqueWordCount(), uniqueUsers.size()));
                 return;
             case "mad":
                 util.sendWithTag(channel, user, markov.generateSentence(80).toUpperCase() + "!");
@@ -133,10 +185,20 @@ public class CommandParser {
             generateWithLimit(channel, user, args);
             return;
         }
+        return;
     }
 
-    private void rebuildIndex() {
+    private void setIdle(MessageReceivedEvent e, boolean b) {
+        System.out.println(e.getJDA().getPing());
+        if (b) {
+            e.getJDA().getPresence().setStatus(OnlineStatus.IDLE);
+        } else {
+            e.getJDA().getPresence().setStatus(OnlineStatus.ONLINE);
+        }
+	}
 
+	private void rebuildIndex() {
+        loadChat();
     }
 
 	/**
@@ -227,7 +289,7 @@ public class CommandParser {
         String id = message.getAuthor().getId();
         String argId = args[1].replace("<@", "");
         argId = argId.replace(">", "");
-        int index = users.indexOf(targetName);
+        int index = uniqueUsers.indexOf(targetName);
         String output = userMarkov.get(index).generateSentence(length);
         if (argId.equals(id)) {
             util.sendWithTag(channel, user, output);

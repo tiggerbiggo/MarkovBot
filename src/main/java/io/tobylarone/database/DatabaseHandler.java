@@ -99,7 +99,7 @@ public class DatabaseHandler {
                 }
                 ps.addBatch();
                 counter++;
-                if(counter % 1000 == 0 || counter == list.size()) {
+                if (counter % 1000 == 0 || counter == list.size()) {
                     ps.executeBatch();
                 }
             }
@@ -200,7 +200,7 @@ public class DatabaseHandler {
     }
 
     /**
-     * 
+     * Closes {@link ResultSet} and {@link Statement}
      */
     public void closeQuery() {
         if (r != null) {
@@ -233,6 +233,11 @@ public class DatabaseHandler {
 		}
     }
 
+    /**
+     * Prints the SQL exception details, useful for debugging
+     * 
+     * @param e the exception to print
+     */
     private void printException(SQLException e) {
         System.out.println("SQLException: " + e.getMessage());
         System.out.println("SQLState: " + e.getSQLState());

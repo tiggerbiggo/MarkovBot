@@ -54,7 +54,13 @@ public class LocalMessage {
 			if (w.matches("<[0-9]+>")) {
 				continue;
 			}
-			if (w.equals("") || w.equals(" ")) {
+			if (w.equals("")) {
+				continue;
+			}
+			if (w.equals(" ")) {
+				continue;
+			}
+			if (w.equals("\r\n") || w.equals("\n")) {
 				continue;
 			}
 			validWords.add(w);

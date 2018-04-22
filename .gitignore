@@ -12,6 +12,8 @@ buildNumber.properties
 src/main/resources/config.properties
 src/main/resources/*.html
 
+*.txt
+
 !/.mvn/wrapper/maven-wrapper.jar
 
 # Compiled class file
