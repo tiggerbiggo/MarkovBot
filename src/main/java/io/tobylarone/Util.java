@@ -1,5 +1,8 @@
 package io.tobylarone;
 
+import java.awt.Color;
+
+import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.entities.MessageChannel;
 import net.dv8tion.jda.core.entities.User;
 
@@ -9,64 +12,68 @@ import net.dv8tion.jda.core.entities.User;
  */
 public class Util {
 
+    private static final Color BLUE = new Color(0x007acc);
+
     public Util() {
     }
 
     /**
      * Builds the help message and sends it to the channel
-     * <p>
-     * Q: Why not use an EmbedBuilder?
-     * <p>
-     * A: Using an EmbedBuilder would make the help message
-     * inaccessible to discord users who disable embeds
      * 
      * @param channel channel to send message to
      */
     public void sendHelp(MessageChannel channel) {
-        String helpMessage = "```Marko Rov Help!\n"
-            + "\n"
-            + "Example Usage: !markov mad\n"
-            + "!markov help          --  Show help message\n"
-            + "!markov about         --  Show about message\n"
-            + "\n"
-            + "!markov               --  Return phrase (max: 140)\n"
-            + "!markov 120           --  Return phrase (max: 1500)\n"
-            + "!markov @User         --  Return phrase based on target user (max: 140)\n"
-            + "!markov @User 120     --  Return phrase based on target user (max: 1500)\n"
-            + "!markov mad           --  MARKO ROV GETS MAD (max: 80)\n"
-            + "!markov contains term --  Returns a phrase that contains 'term' (max: 140)\n"
-            + "\n"
-            + "!markov status        --  View your opt-in status\n"
-            + "!markov add           --  Add your chat history (since 2018/01/01)\n"
-            + "!markov remove        --  Remove all your chat history (since 2018/01/01)\n"
-            + "!markov opt-in        --  Allow other users to generate phrase based on your chat\n"
-            + "!markov opt-out       --  Disallow other users to generate phrase based on your chat\n"
-            + "\n"
-            + "!markov stats         --  Returns some statistics\n"
-            + "!markov ping          --  Returns bot ping\n"
-            + "```";
-        channel.sendMessage(helpMessage).queue();
+
+        EmbedBuilder eb = new EmbedBuilder();
+        eb.setTitle("Markov Help", null);
+        eb.setColor(BLUE);
+        eb.setDescription("Usage information for Markov Bot");
+        eb.addField("!markov help", "Displays the help \nmessage", true);
+        eb.addField("!markov about", "Displays the about message", true);
+        eb.addBlankField(true);
+
+        eb.addField("!markov", "Return generated \nphrase (140 chars)", true);
+        eb.addField("!markov 120", "Return phrase (max: 1500)", true);
+        eb.addBlankField(true);
+
+        eb.addField("!markov @User", "Return phrase based \non target user \n(140 chars)", true);
+        eb.addField("!markov @user 120", "Return phrase based \non target user (max: 1500)", true);
+        eb.addBlankField(true);
+
+        eb.addField("!markov mad", "MARKO ROV GETS \nMAD (80 chars)", true);
+        eb.addField("!markov contains term", "Returns a phrase \nthat contains 'term' \n(max: 140)", true);
+        eb.addBlankField(true);
+
+        eb.addField("!markov status", "View your opt-in status", true);
+        eb.addBlankField(true);
+        eb.addBlankField(true);
+
+        eb.addField("!markov add", "Add your chat history ", true);
+        eb.addField("!markov remove", "Remove all your chat \nhistory", true);
+        eb.addBlankField(true);
+
+        eb.addField("!markov opt-in", "Allow other users to \ngenerate phrase based \non your chat", true);
+        eb.addField("!markov opt-out", "Disallow other users to \ngenerate phrase based \non your chat", true);
+        eb.addBlankField(true);
+
+        eb.addField("!markov stats", "Returns some statistics", true);
+        eb.addField("!markov ping", "Returns bot ping", true);
+        eb.addBlankField(true);
+        channel.sendMessage(eb.build()).queue();
     }
 
     /**
-     * Builds the help message and sends it to the channel
-     * <p>
-     * Q: Why not use an EmbedBuilder? 
-     * <p>
-     * A: Using an EmbedBuilder would make the help message
-     * inaccessible to discord users who disable embeds
+     * Builds the about message and sends it to the channel
      * 
      * @param channel channel to send message to
      */
     public void sendAbout(MessageChannel channel) {
-        String message = "```\n"
-            + "Marko Rov Bot\n"
-            + "\n"
-            + "Written & maintained by Toby Łarone\n"
-            + "\n"
-            + "Source: https://github.com/TobyLarone85/MarkovBot\n"
-            + "```\n";
-            channel.sendMessage(message).queue();
+        EmbedBuilder eb = new EmbedBuilder();
+        eb.setColor(BLUE);
+        eb.setTitle("Marko Rov Bot", null);
+        eb.setDescription("Written & maintained by Toby Łarone");
+        eb.addField("Source", "https://github.comS̨̥̫͎̭ͯ̿̔̀ͅ", false);
+        channel.sendMessage(eb.build()).queue();
     }
 
     /**
