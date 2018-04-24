@@ -189,6 +189,13 @@ public class CommandParser {
         return;
     }
 
+    /**
+     * Sets the bot presence to idle
+     * TODO can probably remove this
+     * 
+     * @param e the message event
+     * @param b if true, set to idle, if false, set to online
+     */
     private void setIdle(MessageReceivedEvent e, boolean b) {
         System.out.println(e.getJDA().getPing());
         if (b) {
@@ -198,6 +205,9 @@ public class CommandParser {
         }
 	}
 
+    /**
+     * Force rebuilding of markov chains
+     */
 	private void rebuildIndex() {
         loadChat();
     }
@@ -328,6 +338,11 @@ public class CommandParser {
         return;
     }
 
+    /**
+     * Wrapper for saving a message to the database
+     * 
+     * @param message the message to save
+     */
 	public void saveMessage(Message message) {
         cmdHelper.saveMessage(message);
 	}

@@ -39,7 +39,13 @@ public class CommandHelper {
     }
 
     /**
-     * In progress - pulling history via JDA
+     * Pulls historic messages from the provided discord channel
+     * TODO ignore messages that have attachments
+     * 
+     * @param channel the channel to retreive history from
+     * @param user the calling user, used to send status update messages to
+     * @param isBackground true will suppress status messages in the chat
+     * only bot Precense will be used for status
      */
     public void history(MessageChannel channel, User user, boolean isBackground) {
         if (!isBackground) {
@@ -47,7 +53,7 @@ public class CommandHelper {
         }
         List<LocalUser> users = userRepo.findAll();
         List<LocalMessage> messages = new ArrayList<>();
-        int historicalMessageLimit = 10000;
+        int historicalMessageLimit = 25000;
         List<LocalUser> uniqueUsers = new ArrayList<>();
         for (Message aMessage : channel.getIterableHistory().cache(false)) {
             if (!aMessage.getContentRaw().startsWith("!markov")) {
@@ -260,6 +266,11 @@ public class CommandHelper {
         return eb.build();
     }
 
+    /**
+     * Saves a message to the database
+     * 
+     * @param message the message to be saved
+     */
 	public void saveMessage(Message message) {
         LocalUser user = userRepo.findByStringId(message.getAuthor().getId());
         if (user != null) {
