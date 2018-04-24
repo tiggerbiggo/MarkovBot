@@ -4,6 +4,7 @@ import java.awt.Color;
 
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.entities.MessageChannel;
+import net.dv8tion.jda.core.entities.MessageEmbed;
 import net.dv8tion.jda.core.entities.User;
 
 /**
@@ -83,6 +84,16 @@ public class Util {
      * @param message message to send
      */
     public void send(MessageChannel channel, String message) {
+        channel.sendMessage(message).queue();
+    }
+
+    /**
+     * Sends an Embed message to the specified discord channel
+     * 
+     * @param channel target channel
+     * @param message message to send
+     */
+    public void sendEmbed(MessageChannel channel, MessageEmbed message) {
         channel.sendMessage(message).queue();
     }
 

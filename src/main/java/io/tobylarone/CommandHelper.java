@@ -1,5 +1,6 @@
 package io.tobylarone;
 
+import java.awt.Color;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoField;
@@ -10,8 +11,10 @@ import io.tobylarone.database.LocalMessageRepo;
 import io.tobylarone.database.LocalUserRepo;
 import io.tobylarone.model.LocalMessage;
 import io.tobylarone.model.LocalUser;
+import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.MessageChannel;
+import net.dv8tion.jda.core.entities.MessageEmbed;
 import net.dv8tion.jda.core.entities.User;
 
 /**
@@ -23,6 +26,7 @@ public class CommandHelper {
     private LocalUserRepo userRepo;
     private LocalMessageRepo messageRepo;
     private Util util;
+    private static final Color BLUE = new Color(0x007acc);
 
     /**
      * CommandHelper Constructor
@@ -241,17 +245,19 @@ public class CommandHelper {
      * @param startTime the startup time of the bot
      * @param wordCount number of globally unique words
      * @param userCount total number of unique users
-     * @return message as {@link String}
+     * @return built message as {@link MessageEmbed}
      */
-    public String prepStatsMessage(LocalDateTime startTime, int wordCount, int userCount) {
+    public MessageEmbed prepStatsMessage(LocalDateTime startTime, int wordCount, int userCount) {
         LocalDateTime now = LocalDateTime.now();
         Duration d = Duration.between(startTime, now);
-        String message = "\n"
-            + "STATISTICS: \n"
-            + "Total unique word count: " + wordCount + "\n"
-            + "Total users: " + userCount + "\n"
-            + "Uptime: " + d.toDays() + "days " + (d.toHours() % 60) + "hours " + (d.toMinutes() % 60) + "min\n";
-        return message;
+        String uptime = d.toDays() + " days " + (d.toHours() % 60) + " hours " + (d.toMinutes() % 60) + " min";
+        EmbedBuilder eb = new EmbedBuilder();
+        eb.setColor(BLUE);
+        eb.setTitle("Statistics");
+        eb.addField("Unique word count", String.valueOf(wordCount), false);
+        eb.addField("Total users", String.valueOf(userCount), false);
+        eb.addField("Uptime", uptime, false);
+        return eb.build();
     }
 
 	public void saveMessage(Message message) {

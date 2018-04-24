@@ -164,7 +164,8 @@ public class CommandParser {
                 util.sendWithTag(channel, user, output);
                 return;
             case "stats":
-                util.send(channel, cmdHelper.prepStatsMessage(startTime, markov.getUniqueWordCount(), uniqueUsers.size()));
+                e.getJDA().getPresence().setGame(Game.playing("Ping: " + e.getJDA().getPing() + "ms"));
+                util.sendEmbed(channel, cmdHelper.prepStatsMessage(startTime, markov.getUniqueWordCount(), uniqueUsers.size()));
                 return;
             case "mad":
                 util.sendWithTag(channel, user, markov.generateSentence(80).toUpperCase() + "!");
