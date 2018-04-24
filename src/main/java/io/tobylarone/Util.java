@@ -73,7 +73,7 @@ public class Util {
         eb.setColor(BLUE);
         eb.setTitle("Marko Rov Bot", null);
         eb.setDescription("Written & maintained by Toby Łarone");
-        eb.addField("Source", "https://github.comS̨̥̫͎̭ͯ̿̔̀ͅ", false);
+        eb.addField("Source", "https://github.com/Toby", false);
         channel.sendMessage(eb.build()).queue();
     }
 

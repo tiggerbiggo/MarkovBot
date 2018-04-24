@@ -197,7 +197,6 @@ public class CommandParser {
      * @param b if true, set to idle, if false, set to online
      */
     private void setIdle(MessageReceivedEvent e, boolean b) {
-        System.out.println(e.getJDA().getPing());
         if (b) {
             e.getJDA().getPresence().setStatus(OnlineStatus.IDLE);
         } else {
