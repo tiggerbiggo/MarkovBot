@@ -290,13 +290,14 @@ public class CommandParser {
         String argId = args[1].replace("<@", "");
         argId = argId.replace(">", "");
         int index = uniqueUsers.indexOf(targetName);
-        String output = userMarkov.get(index).generateSentence(length);
         if (argId.equals(id)) {
+            String output = userMarkov.get(index).generateSentence(length);
             util.sendWithTag(channel, user, output);
             return;
         } else {
             LocalUser searchUser = userRepo.findByStringId(argId);
             if (searchUser != null && searchUser.isOptIn()) {
+                String output = userMarkov.get(index).generateSentence(length);
                 util.sendWithTag(channel, user, output);
             return;
             }

@@ -145,26 +145,32 @@ public class Markov {
         List<String> sentence = new ArrayList<>();
         int target = length;
         String next = "";
-        String startingPoint = uniqueWords.get(rand.nextInt(uniqueWords.size()));
-        ArrayList<String> start = index.get(startingPoint);
-
-        next = start.get(rand.nextInt(start.size()));
-        sentence.add(next);
-        target -= next.length();
-
-        while (target > 0) {
-            if (index.get(next) != null) {
-                ArrayList<String> wordChain = index.get(next);
-                if (wordChain.isEmpty()) {
-                    next = uniqueWords.get(rand.nextInt(uniqueWords.size()));
+        try {
+            String startingPoint = uniqueWords.get(rand.nextInt(uniqueWords.size()));
+            ArrayList<String> start = index.get(startingPoint);
+    
+            next = start.get(rand.nextInt(start.size()));
+            sentence.add(next);
+            target -= next.length();
+    
+            while (target > 0) {
+                if (index.get(next) != null) {
+                    ArrayList<String> wordChain = index.get(next);
+                    if (wordChain.isEmpty()) {
+                        next = uniqueWords.get(rand.nextInt(uniqueWords.size()));
+                        break;
+                    }
+                    next = wordChain.get(rand.nextInt(wordChain.size()));
+                    sentence.add(next);
+                    target -= next.length() + 1;
+                } else {
                     break;
                 }
-                next = wordChain.get(rand.nextInt(wordChain.size()));
-                sentence.add(next);
-                target -= next.length() + 1;
-            } else {
-                break;
             }
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+            String s = "Error: Something went wrong during generation.";
+            sentence = new ArrayList<>(Arrays.asList(s.split(" ")));
         }
         return toString(sentence);
     }
