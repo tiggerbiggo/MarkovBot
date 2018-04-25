@@ -1,4 +1,4 @@
-package io.tobylarone.model;
+package io.tobylarone.markov.model;
 
 /**
  * LocalUser class

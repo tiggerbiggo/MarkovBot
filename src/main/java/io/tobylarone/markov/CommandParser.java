@@ -1,13 +1,13 @@
-package io.tobylarone;
+package io.tobylarone.markov;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.tobylarone.database.LocalMessageRepo;
-import io.tobylarone.database.LocalUserRepo;
-import io.tobylarone.model.LocalMessage;
-import io.tobylarone.model.LocalUser;
+import io.tobylarone.markov.database.LocalMessageRepo;
+import io.tobylarone.markov.database.LocalUserRepo;
+import io.tobylarone.markov.model.LocalMessage;
+import io.tobylarone.markov.model.LocalUser;
 import net.dv8tion.jda.core.OnlineStatus;
 import net.dv8tion.jda.core.entities.Game;
 import net.dv8tion.jda.core.entities.Message;

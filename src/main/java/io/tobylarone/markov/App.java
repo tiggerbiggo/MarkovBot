@@ -1,4 +1,4 @@
-package io.tobylarone;
+package io.tobylarone.markov;
 
 import javax.security.auth.login.LoginException;
 

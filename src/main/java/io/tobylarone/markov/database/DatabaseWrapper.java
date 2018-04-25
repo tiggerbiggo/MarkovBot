@@ -1,4 +1,4 @@
-package io.tobylarone.database;
+package io.tobylarone.markov.database;
 
 import java.util.List;
 

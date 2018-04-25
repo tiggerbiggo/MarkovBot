@@ -1,14 +1,14 @@
-package io.tobylarone;
+package io.tobylarone.markov;
 
 import org.junit.Test;
 
 /**
- * UtilTest Class
+ * CommandParserTest Class
  */
-public class UtilTest {
+public class CommandParserTest {
 
     /**
-     * Test
+     * 
      */
     @Test
     public void test() {

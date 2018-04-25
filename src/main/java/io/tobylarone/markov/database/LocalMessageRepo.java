@@ -1,11 +1,11 @@
-package io.tobylarone.database;
+package io.tobylarone.markov.database;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.tobylarone.model.LocalMessage;
+import io.tobylarone.markov.model.LocalMessage;
 
 /**
  * LocalMessageRepo Class

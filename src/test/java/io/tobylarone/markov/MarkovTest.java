@@ -1,9 +1,11 @@
-package io.tobylarone;
+package io.tobylarone.markov;
 
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
 
 import org.junit.Test;
+
+import io.tobylarone.markov.Markov;
 
 /**
  * MarkovTest Class

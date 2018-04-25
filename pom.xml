@@ -69,7 +69,7 @@
           <artifactId>exec-maven-plugin</artifactId>
           <version>1.6.0</version>
           <configuration>
-            <mainClass>io.tobylarone.App</mainClass>
+            <mainClass>io.tobylarone.markov.App</mainClass>
           </configuration>
         </plugin>
 
@@ -98,7 +98,7 @@
             </descriptorRefs>
             <archive>
               <manifest>
-                <mainClass>io.tobylarone.App</mainClass>
+                <mainClass>io.tobylarone.markov.App</mainClass>
               </manifest>
             </archive>
           </configuration>

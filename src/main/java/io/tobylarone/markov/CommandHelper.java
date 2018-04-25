@@ -1,4 +1,4 @@
-package io.tobylarone;
+package io.tobylarone.markov;
 
 import java.awt.Color;
 import java.time.Duration;
@@ -7,10 +7,10 @@ import java.time.temporal.ChronoField;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.tobylarone.database.LocalMessageRepo;
-import io.tobylarone.database.LocalUserRepo;
-import io.tobylarone.model.LocalMessage;
-import io.tobylarone.model.LocalUser;
+import io.tobylarone.markov.database.LocalMessageRepo;
+import io.tobylarone.markov.database.LocalUserRepo;
+import io.tobylarone.markov.model.LocalMessage;
+import io.tobylarone.markov.model.LocalUser;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.MessageChannel;

@@ -1,4 +1,4 @@
-package io.tobylarone;
+package io.tobylarone.markov;
 
 /**
  * Thicc class

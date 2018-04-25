@@ -1,4 +1,4 @@
-package io.tobylarone.database;
+package io.tobylarone.markov.database;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -8,9 +8,9 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
 
-import io.tobylarone.Config;
-import io.tobylarone.model.LocalMessage;
-import io.tobylarone.model.LocalUser;
+import io.tobylarone.markov.Config;
+import io.tobylarone.markov.model.LocalMessage;
+import io.tobylarone.markov.model.LocalUser;
 
 /**
  * DatabaseHandler class

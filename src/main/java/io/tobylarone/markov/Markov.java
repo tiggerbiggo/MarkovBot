@@ -1,4 +1,4 @@
-package io.tobylarone;
+package io.tobylarone.markov;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -137,6 +137,7 @@ public class Markov {
      * the specified length. If chains are short and infrequently
      * used in the origin text then sentences can be lower than 
      * the specified length
+     * TODO maybe some more exception handling/verification
      * 
      * @param int length of sentence to generate
      * @return generated sentence as {@link String}
