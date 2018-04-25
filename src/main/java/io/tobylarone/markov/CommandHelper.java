@@ -70,14 +70,21 @@ public class CommandHelper {
                     }
                 }
                 if (isFound) {
-                    LocalMessage m = new LocalMessage(u.getId(), aMessage.getId(), aMessage.getContentRaw());
-                    if(!aMessage.getMentionedUsers().isEmpty()) {
-                        for (User mentionedUser : aMessage.getMentionedUsers()) {
-                            m.setMessage(m.getMessage() + " " + mentionedUser.getName());
+                    if (aMessage.getAttachments().size() == 0 && aMessage.getEmbeds().size() == 0) {
+                        LocalMessage m = new LocalMessage(u.getId(), aMessage.getId(), aMessage.getContentRaw());
+                        if(!aMessage.getMentionedUsers().isEmpty()) {
+                            for (User mentionedUser : aMessage.getMentionedUsers()) {
+                                m.setMessage(m.getMessage() + " " + mentionedUser.getName());
+                            }
                         }
+                        m.removeInvalidWords();
+                        if (m.getMessage().equals("")) {
+                            continue;
+                        }
+                        messages.add(m);
+                    } else {
+                        continue;
                     }
-                    m.removeInvalidWords();
-                    messages.add(m);
                 }
             }
             if (--historicalMessageLimit <= 0) {
@@ -274,9 +281,11 @@ public class CommandHelper {
 	public void saveMessage(Message message) {
         LocalUser user = userRepo.findByStringId(message.getAuthor().getId());
         if (user != null) {
-            LocalMessage m = new LocalMessage(user.getId(), message.getId(), message.getContentRaw());
-            m.removeInvalidWords();
-            messageRepo.insert(m);
+            if (message.getAttachments().size() == 0 && message.getEmbeds().size() == 0) {
+                LocalMessage m = new LocalMessage(user.getId(), message.getId(), message.getContentRaw());
+                m.removeInvalidWords();
+                messageRepo.insert(m);
+            }
         }
 	}
 }
