@@ -2,6 +2,9 @@ package io.tobylarone.markov;
 
 import javax.security.auth.login.LoginException;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import net.dv8tion.jda.core.AccountType;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.JDABuilder;
@@ -14,6 +17,8 @@ import net.dv8tion.jda.core.hooks.ListenerAdapter;
  * App class 
  */
 public class App extends ListenerAdapter {
+    private static final Logger LOGGER = LogManager.getLogger(App.class);
+
     private Util util;
     private CommandParser parser;
 
@@ -24,6 +29,7 @@ public class App extends ListenerAdapter {
      * @throws InterruptedException if JDABuilder is interrupted during initialisation
      */
     public static void main(String[] args) throws LoginException, InterruptedException {
+        LOGGER.info("Initialising");
         App app = new App();
         Config config = new Config();
         JDA j = new JDABuilder(AccountType.BOT).setToken(config.getProperty("token")).buildBlocking();

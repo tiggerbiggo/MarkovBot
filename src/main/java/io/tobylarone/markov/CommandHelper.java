@@ -56,6 +56,9 @@ public class CommandHelper {
         int historicalMessageLimit = 25000;
         List<LocalUser> uniqueUsers = new ArrayList<>();
         for (Message aMessage : channel.getIterableHistory().cache(false)) {
+            if (--historicalMessageLimit <= 0) {
+                break;
+            }
             if (!aMessage.getContentRaw().startsWith("!markov")) {
                 boolean isFound = false;
                 LocalUser u = null;
@@ -86,9 +89,6 @@ public class CommandHelper {
                         continue;
                     }
                 }
-            }
-            if (--historicalMessageLimit <= 0) {
-                break;
             }
         }
         messageRepo.insertBulk(messages);

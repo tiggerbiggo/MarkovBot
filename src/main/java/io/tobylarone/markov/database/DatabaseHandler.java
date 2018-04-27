@@ -23,7 +23,8 @@ public class DatabaseHandler {
     private ResultSet r;
 
     /**
-     * DatabaseHandler constructor
+     * DatabaseHandler constructor.
+     * Establishes connection to the database
      */
     public DatabaseHandler() {
         Config config = new Config();

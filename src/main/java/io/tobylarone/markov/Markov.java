@@ -7,10 +7,14 @@ import java.util.List;
 import java.util.Random;
 import java.util.stream.Stream;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 /**
  * Markov class
  */
 public class Markov {
+    private static final Logger LOGGER = LogManager.getLogger(App.class);
     private String[] input;
     private Hashtable<String, ArrayList<String>> index;
     private Random rand = new Random();
@@ -39,9 +43,11 @@ public class Markov {
                 word = removeUnwantedStrings(word);
                 nextWord = removeUnwantedStrings(nextWord);
                 if (!isValid(word)) {
+                    LOGGER.trace("Invalid word skipped: " + word);
                     continue;
                 }
                 if (!isValid(nextWord)) {
+                    LOGGER.trace("Invalid word skipped: " + nextWord);
                     continue;
                 }
     
@@ -89,8 +95,10 @@ public class Markov {
      * @return phrase as {@link String}
      */
     private String removeUnwantedStrings(String input) {
+        LOGGER.debug("Removing unwanted strings from: " + input);
         input = input.replaceAll("\\(edited\\)", "");
         input = input.replaceAll("@", "");
+        LOGGER.debug("Cleaned string: " + input);
         return input;
     }
 
@@ -103,24 +111,33 @@ public class Markov {
      * @return boolean
      */
     private boolean isValid(String input) {
+        LOGGER.debug("Validating string: " + input);
         if (input.startsWith("http://")) {
+            LOGGER.debug("Url found in input: " + input);
             return false;
         }
         if (input.startsWith("https://")) {
+            LOGGER.debug("Url found in input: " + input);
             return false;
         }
         switch (input) {
             case "":
+                LOGGER.debug("Found empty string");
                 return false;
             case "#":
+                LOGGER.debug("Found string containing single #");
                 return false;
             case "-":
+                LOGGER.debug("Found string containing single -");
                 return false;
             case "@":
+                LOGGER.debug("Found string containing single @");
                 return false;
             case "(edited)":
+                LOGGER.debug("Found string matching `(edited)`");
                 return false;
         }
+        LOGGER.debug("String validated");
         return true;
     }
         

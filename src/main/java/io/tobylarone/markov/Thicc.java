@@ -1,11 +1,16 @@
 package io.tobylarone.markov;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 /**
  * Thicc class
  */
 public class Thicc {
 
+    private static final Logger LOGGER = LogManager.getLogger(App.class);
     private String input;
+    
     /**
      * Thicc Constructor
      * @param input the input string to translate
@@ -20,7 +25,9 @@ public class Thicc {
      * @return the output string
      */
     public String parse() {
+        LOGGER.debug("Parsing a thicc request.");
         String output = input.toLowerCase();
+        LOGGER.debug(input);
         output = output.replaceAll("a", "卂");
         output = output.replaceAll("b", "乃");
         output = output.replaceAll("c", "匚");
@@ -48,7 +55,7 @@ public class Thicc {
         output = output.replaceAll("y", "丫");
         output = output.replaceAll("z", "乙");
         output = output.replaceAll(" ", "  ");
-
+        
         return output;
     }
 }

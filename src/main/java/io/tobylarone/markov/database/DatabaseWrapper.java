@@ -23,7 +23,7 @@ public abstract class DatabaseWrapper<T> {
 
     public abstract List<T> findAll();
 
-    public abstract void insert(T t);
+	public abstract void insert(T t);
 
 	/**
 	 * @return the db

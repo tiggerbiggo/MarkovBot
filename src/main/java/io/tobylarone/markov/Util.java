@@ -2,6 +2,9 @@ package io.tobylarone.markov;
 
 import java.awt.Color;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.entities.MessageChannel;
 import net.dv8tion.jda.core.entities.MessageEmbed;
@@ -12,7 +15,7 @@ import net.dv8tion.jda.core.entities.User;
  *
  */
 public class Util {
-
+    private static final Logger LOGGER = LogManager.getLogger(App.class);
     private static final Color BLUE = new Color(0x007acc);
 
     public Util() {
@@ -24,7 +27,6 @@ public class Util {
      * @param channel channel to send message to
      */
     public void sendHelp(MessageChannel channel) {
-
         EmbedBuilder eb = new EmbedBuilder();
         eb.setTitle("Markov Help", null);
         eb.setColor(BLUE);
@@ -60,6 +62,7 @@ public class Util {
         eb.addField("!markov stats", "Returns some statistics", true);
         eb.addField("!markov ping", "Returns bot ping", true);
         eb.addBlankField(true);
+        LOGGER.debug("Sending help message to channel:" + channel.getId());
         channel.sendMessage(eb.build()).queue();
     }
 
@@ -73,7 +76,8 @@ public class Util {
         eb.setColor(BLUE);
         eb.setTitle("Marko Rov Bot", null);
         eb.setDescription("Written & maintained by Toby Łarone");
-        eb.addField("Source", "https://github.com/Toby", false);
+        eb.addField("Source", "https://github.com/TobyLarone85/MarkovBot", false);
+        LOGGER.debug("Sending about message to channel:" + channel.getId());
         channel.sendMessage(eb.build()).queue();
     }
 
@@ -84,6 +88,8 @@ public class Util {
      * @param message message to send
      */
     public void send(MessageChannel channel, String message) {
+        LOGGER.debug("Sending message to channel: " + channel.getId());
+        LOGGER.debug("Message: " + message);
         channel.sendMessage(message).queue();
     }
 
@@ -94,6 +100,7 @@ public class Util {
      * @param message message to send
      */
     public void sendEmbed(MessageChannel channel, MessageEmbed message) {
+        LOGGER.debug("Sending embed message to channel: " + channel.getId());
         channel.sendMessage(message).queue();
     }
 
@@ -106,6 +113,8 @@ public class Util {
      * @param message message to send
      */
     public void sendWithTag(MessageChannel channel, User user, String message) {
+        LOGGER.debug("Sending message to user: " + user.getId() + " to channel: " + channel.getId());
+        LOGGER.debug("Message: " + message);
         channel.sendMessage(user.getAsMention() + " " + message).queue();
     }
 }
