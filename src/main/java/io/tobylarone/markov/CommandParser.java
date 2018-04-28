@@ -4,6 +4,9 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import io.tobylarone.markov.database.LocalMessageRepo;
 import io.tobylarone.markov.database.LocalUserRepo;
 import io.tobylarone.markov.model.LocalMessage;
@@ -21,6 +24,8 @@ import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
  */
 public class CommandParser {
 
+    private static final Logger LOGGER = LogManager.getLogger(CommandParser.class);
+    
     private Markov markov;
     private List<Markov> userMarkov;
     private List<String> uniqueUsers;
@@ -66,6 +71,9 @@ public class CommandParser {
                 uniqueUsers.add(u.getDiscordId());
             }
         }
+
+        LOGGER.info("Unique user count: " + uniqueUsers.size());
+
         for (LocalMessage m : messages) {
             chatList.add(m.getMessage());
             LocalUser user = userRepo.findById(m.getUserId());
@@ -309,7 +317,7 @@ public class CommandParser {
             if (searchUser != null && searchUser.isOptIn()) {
                 String output = userMarkov.get(index).generateSentence(length);
                 util.sendWithTag(channel, user, output);
-            return;
+                return;
             }
             util.sendWithTag(channel, user, config.getMessage("tag.user.out"));
             return;

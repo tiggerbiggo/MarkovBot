@@ -8,7 +8,7 @@ import org.apache.logging.log4j.Logger;
  */
 public class Thicc {
 
-    private static final Logger LOGGER = LogManager.getLogger(App.class);
+    private static final Logger LOGGER = LogManager.getLogger(Thicc.class);
     private String input;
     
     /**

@@ -15,7 +15,7 @@ import net.dv8tion.jda.core.entities.User;
  *
  */
 public class Util {
-    private static final Logger LOGGER = LogManager.getLogger(App.class);
+    private static final Logger LOGGER = LogManager.getLogger(Util.class);
     private static final Color BLUE = new Color(0x007acc);
 
     public Util() {

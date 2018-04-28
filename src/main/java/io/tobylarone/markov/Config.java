@@ -4,11 +4,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 /**
  * Config
  */
 public class Config {
-
+    private static final Logger LOGGER = LogManager.getLogger(Config.class);
     public Properties config;
     public Properties messages;
 
@@ -20,31 +23,35 @@ public class Config {
         config = new Properties();
         messages = new Properties();
 
+        LOGGER.debug("Attempting to load config.properties");
         try (InputStream input = getClass().getClassLoader().getResourceAsStream("config.properties")) {
             if (input != null) {
                 config.load(input);
             } else {
-                System.out.println("Cannot load config.properties");
+                LOGGER.error("Failed to load config.properties");
                 System.exit(1);
             }
         } catch (IOException e) {
-            System.out.println("Cannot load config.properties");
+            LOGGER.error("Failed to load config.properties");
             e.printStackTrace();
             System.exit(1);
         }
+        LOGGER.debug("config.properties loaded.");
 
+        LOGGER.debug("Attempting to load messages.properties");
         try (InputStream input = getClass().getClassLoader().getResourceAsStream("messages.properties")) {
             if (input != null) {
                 messages.load(input);
             } else {
-                System.out.println("Cannot load messages.properties");
+                LOGGER.error("Failed to load messages.properties");
                 System.exit(1);
             }
         } catch (IOException e) {
-            System.out.println("Cannot load messages.properties");
+            LOGGER.error("Failed to load messages.properties");
             e.printStackTrace();
             System.exit(1);
         }
+        LOGGER.debug("messages.properties loaded.");
     }
 
     /**

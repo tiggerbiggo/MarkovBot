@@ -14,7 +14,9 @@ import org.apache.logging.log4j.Logger;
  * Markov class
  */
 public class Markov {
-    private static final Logger LOGGER = LogManager.getLogger(App.class);
+    private static final Logger LOGGER = LogManager.getLogger(Markov.class);
+    private static final int DEFAULT_LENGTH = 140;
+    private static final int LENGTH_LENIENCY = 10;
     private String[] input;
     private Hashtable<String, ArrayList<String>> index;
     private Random rand = new Random();
@@ -36,6 +38,7 @@ public class Markov {
      * Builds the index of words. First checks that words are valid
      */
     private void buildIndex() {
+        LOGGER.debug("Building index");
         for (int i = 0; i < input.length; i++) {
             if (i < input.length - 1) {
                 String word = input[i];
@@ -74,6 +77,7 @@ public class Markov {
                 index.put(word, new ArrayList<String>());
             }
         }
+        LOGGER.debug("Index created");
     }
 
     /**
@@ -95,10 +99,10 @@ public class Markov {
      * @return phrase as {@link String}
      */
     private String removeUnwantedStrings(String input) {
-        LOGGER.debug("Removing unwanted strings from: " + input);
+        LOGGER.trace("Removing unwanted strings from: " + input);
         input = input.replaceAll("\\(edited\\)", "");
         input = input.replaceAll("@", "");
-        LOGGER.debug("Cleaned string: " + input);
+        LOGGER.trace("Cleaned string: " + input);
         return input;
     }
 
@@ -111,33 +115,33 @@ public class Markov {
      * @return boolean
      */
     private boolean isValid(String input) {
-        LOGGER.debug("Validating string: " + input);
+        LOGGER.trace("Validating string: " + input);
         if (input.startsWith("http://")) {
-            LOGGER.debug("Url found in input: " + input);
+            LOGGER.trace("Url found in input: " + input);
             return false;
         }
         if (input.startsWith("https://")) {
-            LOGGER.debug("Url found in input: " + input);
+            LOGGER.trace("Url found in input: " + input);
             return false;
         }
         switch (input) {
             case "":
-                LOGGER.debug("Found empty string");
+                LOGGER.trace("Found empty string");
                 return false;
             case "#":
-                LOGGER.debug("Found string containing single #");
+                LOGGER.trace("Found string containing single #");
                 return false;
             case "-":
-                LOGGER.debug("Found string containing single -");
+                LOGGER.trace("Found string containing single -");
                 return false;
             case "@":
-                LOGGER.debug("Found string containing single @");
+                LOGGER.trace("Found string containing single @");
                 return false;
             case "(edited)":
-                LOGGER.debug("Found string matching `(edited)`");
+                LOGGER.trace("Found string matching `(edited)`");
                 return false;
         }
-        LOGGER.debug("String validated");
+        LOGGER.trace("String validated");
         return true;
     }
         
@@ -160,14 +164,23 @@ public class Markov {
      * @return generated sentence as {@link String}
      */
     public String generateSentence(int length) {
+        long startTime = System.nanoTime();
         List<String> sentence = new ArrayList<>();
         int target = length;
+        int randValue = 0;
         String next = "";
+        LOGGER.trace("Generating sentence");
         try {
-            String startingPoint = uniqueWords.get(rand.nextInt(uniqueWords.size()));
+            LOGGER.trace("Random limit: " + uniqueWords.size());
+            randValue = rand.nextInt(uniqueWords.size());
+            LOGGER.trace("Random value: " + randValue);
+            String startingPoint = uniqueWords.get(randValue);
             ArrayList<String> start = index.get(startingPoint);
     
-            next = start.get(rand.nextInt(start.size()));
+            LOGGER.trace("Random limit: " + start.size());
+            randValue = rand.nextInt(start.size());
+            LOGGER.trace("Random value: " + randValue);
+            next = start.get(randValue);
             sentence.add(next);
             target -= next.length();
     
@@ -175,21 +188,44 @@ public class Markov {
                 if (index.get(next) != null) {
                     ArrayList<String> wordChain = index.get(next);
                     if (wordChain.isEmpty()) {
-                        next = uniqueWords.get(rand.nextInt(uniqueWords.size()));
+                        LOGGER.trace("Random limit: " + uniqueWords.size());
+                        randValue = rand.nextInt(uniqueWords.size());
+                        LOGGER.trace("Random value: " + randValue);
+                        next = uniqueWords.get(randValue);
                         break;
                     }
-                    next = wordChain.get(rand.nextInt(wordChain.size()));
+                    LOGGER.trace("Random limit: " + wordChain.size());
+                    randValue = rand.nextInt(wordChain.size());
+                    LOGGER.trace("Random value: " + randValue);
+                    next = wordChain.get(randValue);
                     sentence.add(next);
                     target -= next.length() + 1;
                 } else {
-                    break;
+                    if (length > DEFAULT_LENGTH && target > LENGTH_LENIENCY) {
+                        LOGGER.trace("Random limit: " + uniqueWords.size());
+                        randValue = rand.nextInt(uniqueWords.size());
+                        LOGGER.trace("Random value: " + randValue);
+                        startingPoint = uniqueWords.get(randValue);
+                        start = index.get(startingPoint);
+                        LOGGER.trace("Random limit: " + start.size());
+                        randValue = rand.nextInt(start.size());
+                        LOGGER.trace("Random value: " + randValue);
+                        next = start.get(randValue);
+                        sentence.add(next);
+                        target -= next.length();
+                    } else {
+                        break;
+                    }
                 }
             }
+            LOGGER.debug("Target final: " + target);
         } catch (IllegalArgumentException e) {
             e.printStackTrace();
             String s = "Error: Something went wrong during generation.";
             sentence = new ArrayList<>(Arrays.asList(s.split(" ")));
         }
+        long endTime = System.nanoTime();
+        LOGGER.info("Generated sentence (" + length + "chars): " + (endTime - startTime) / 1000 + "μs");
         return toString(sentence);
     }
 
@@ -200,7 +236,7 @@ public class Markov {
      * @return generated sentence as {@link String}
      */
     public String generateSentence() {
-        return generateSentence(140);
+        return generateSentence(DEFAULT_LENGTH);
     }
 
     /**
