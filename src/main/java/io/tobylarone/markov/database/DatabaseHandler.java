@@ -8,6 +8,9 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import io.tobylarone.markov.Config;
 import io.tobylarone.markov.model.LocalMessage;
 import io.tobylarone.markov.model.LocalUser;
@@ -17,8 +20,8 @@ import io.tobylarone.markov.model.LocalUser;
  */
 public class DatabaseHandler {
 
+    private static final Logger LOGGER = LogManager.getLogger(DatabaseHandler.class);
     private Connection conn;
-    private Statement s;
     private PreparedStatement ps;
     private ResultSet r;
 
@@ -36,8 +39,8 @@ public class DatabaseHandler {
         try {
             conn = DriverManager.getConnection("jdbc:mysql://" + host + "/" + dbname + "?"
                                             + "user=" + dbuser + "&password=" + dbpass
-                                            + "&useSSL=" + dbssl);
-            s = null;
+                                            + "&useSSL=" + dbssl
+                                            + "&useUnicode=yes&characterEncoding=UTF-8");
             r = null;
         } catch (SQLException e) {
             printException(e);
@@ -49,14 +52,13 @@ public class DatabaseHandler {
      */
     public ResultSet selectId(String table, String[] inputFields, String targetField, Object id) {
         try {
-            s = conn.createStatement();
             String fields = String.join(", ", inputFields);
             String query = "SELECT " + fields + " FROM " + table 
-                            + " WHERE " + targetField + "=" + id;
-
-            if (s.execute(query)) {
-                r = s.getResultSet();
-            }
+            + " WHERE " + targetField + "= ?";
+            
+            ps = conn.prepareStatement(query);
+            ps.setObject(1, id);
+            r = ps.executeQuery();
 
         } catch (SQLException e) {
             printException(e);
@@ -69,13 +71,11 @@ public class DatabaseHandler {
      */
     public ResultSet select(String table, String[] inputFields) {
         try {
-            s = conn.createStatement();
             String fields = String.join(", ", inputFields);
             String query = "SELECT " + fields + " FROM " + table;
+            ps = conn.prepareStatement(query);
 
-            if (s.execute(query)) {
-                r = s.getResultSet();
-            }
+            r = ps.executeQuery();
 
         } catch (SQLException e) {
             printException(e);
@@ -212,14 +212,6 @@ public class DatabaseHandler {
             }
             r = null;
         }
-        if (s != null) {
-            try {
-                s.close();
-            } catch (SQLException e) {
-                printException(e);
-            }
-            s = null;
-        }
     }
 
     /**
@@ -240,8 +232,8 @@ public class DatabaseHandler {
      * @param e the exception to print
      */
     private void printException(SQLException e) {
-        System.out.println("SQLException: " + e.getMessage());
-        System.out.println("SQLState: " + e.getSQLState());
-        System.out.println("ErrorCode: " + e.getErrorCode());
+        LOGGER.warn("SQL Exception: " + e.getMessage());
+        LOGGER.warn("SQL State: " + e.getSQLState());
+        LOGGER.warn("Error Code: " + e.getErrorCode());
     }
 }

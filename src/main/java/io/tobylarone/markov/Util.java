@@ -114,7 +114,6 @@ public class Util {
      */
     public void sendWithTag(MessageChannel channel, User user, String message) {
         LOGGER.debug("Sending message to user: " + user.getId() + " to channel: " + channel.getId());
-        LOGGER.debug("Message: " + message);
         channel.sendMessage(user.getAsMention() + " " + message).queue();
     }
 }

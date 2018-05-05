@@ -3,6 +3,7 @@ package io.tobylarone.markov;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -100,8 +101,26 @@ public class CommandParser {
      */
     public void parseSingle(MessageReceivedEvent e) {
         String markovSentence = markov.generateSentence();
+        LOGGER.info("Bot owner: " + isBotOwner(e));
+        LOGGER.info("Server owner: " + isServerOwner(e));
         util.sendWithTag(e.getChannel(), e.getAuthor(), markovSentence);
-	}
+    }
+    
+    /**
+     * Function to randomly send a generated sentence into the
+     * chat. Message will be generated and sent only 1 in 20 times
+     * 
+     * @param e The message received
+     */
+    public void converse(MessageReceivedEvent e) {
+        Random rand = new Random();
+        int randomChance = rand.nextInt(20);
+        if (randomChance == 10) {
+            int randomLength = rand.nextInt(1500 + 50) + 50;
+            String markovSentence = markov.generateSentence(randomLength);
+            util.send(e.getChannel(), markovSentence);
+        }
+    }
 
     /**
      * Method to parse commands, split from arguments of length three for nicer
@@ -133,7 +152,7 @@ public class CommandParser {
                 util.sendAbout(channel);
                 return;
             case "history":
-                if (user.getName().equals("Toby Łarone")) {
+                if (isServerOwner(e) || isBotOwner(e)) {
                     setIdle(e, true);
                     e.getJDA().getPresence().setGame(Game.playing("Loading history..."));
                     cmdHelper.history(channel, user, true);
@@ -145,7 +164,7 @@ public class CommandParser {
                 util.sendWithTag(channel, user, config.getMessage("request.no-permission"));
                 return;
             case "rebuild":
-                if (user.getName().equals("Toby Łarone")) {
+                if (isServerOwner(e) || isBotOwner(e)) {
                     setIdle(e, true);
                     rebuildIndex();
                     setIdle(e, false);
@@ -195,6 +214,16 @@ public class CommandParser {
             return;
         }
         return;
+    }
+
+    private boolean isBotOwner(MessageReceivedEvent e) {
+        String ownerId = config.getProperty("bot.owner.id");
+        return (ownerId.equals(e.getAuthor().getId())) ? true : false;
+    }
+
+    private boolean isServerOwner(MessageReceivedEvent e) {
+        // String serverOwnerId = e.getGuild().getOwner().getUser();
+        return (e.getGuild().getOwner().getUser() == e.getAuthor()) ? true : false;
     }
 
     /**

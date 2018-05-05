@@ -75,6 +75,7 @@ public class App extends ListenerAdapter {
                         break;
                 }
             } else {
+                parser.converse(e);
                 parser.saveMessage(message);
             }
         }
