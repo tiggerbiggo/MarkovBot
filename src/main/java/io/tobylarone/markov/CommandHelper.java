@@ -7,6 +7,9 @@ import java.time.temporal.ChronoField;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import io.tobylarone.markov.database.LocalMessageRepo;
 import io.tobylarone.markov.database.LocalUserRepo;
 import io.tobylarone.markov.model.LocalMessage;
@@ -21,6 +24,8 @@ import net.dv8tion.jda.core.entities.User;
  * CommandHelper Class
  */
 public class CommandHelper {
+
+    private static final Logger LOGGER = LogManager.getLogger(CommandHelper.class);
 
     private Config config;
     private LocalUserRepo userRepo;
@@ -48,6 +53,9 @@ public class CommandHelper {
      * only bot Precense will be used for status
      */
     public void history(MessageChannel channel, User user, boolean isBackground) {
+        LOGGER.info("Starting history collection");
+        long startTime = System.nanoTime();
+        // TODO get current db message count
         if (!isBackground) {
             util.sendWithTag(channel, user, config.getMessage("history.collection.started"));
         }
@@ -63,9 +71,10 @@ public class CommandHelper {
                 boolean isFound = false;
                 LocalUser u = null;
                 for (LocalUser lu : users) {
-                    if(lu.getDiscordId().equals(aMessage.getAuthor().getId())) {
+                    if (lu.getDiscordId().equals(aMessage.getAuthor().getId())) {
                         isFound = true;
-                        if(!uniqueUsers.contains(lu)) {
+                        if (!uniqueUsers.contains(lu)) {
+                            LOGGER.debug("Adding a new user");
                             uniqueUsers.add(lu);
                         }
                         u = lu;
@@ -75,7 +84,7 @@ public class CommandHelper {
                 if (isFound) {
                     if (aMessage.getAttachments().size() == 0 && aMessage.getEmbeds().size() == 0) {
                         LocalMessage m = new LocalMessage(u.getId(), aMessage.getId(), aMessage.getContentRaw());
-                        if(!aMessage.getMentionedUsers().isEmpty()) {
+                        if (!aMessage.getMentionedUsers().isEmpty()) {
                             for (User mentionedUser : aMessage.getMentionedUsers()) {
                                 m.setMessage(m.getMessage() + " " + mentionedUser.getName());
                             }
@@ -85,6 +94,7 @@ public class CommandHelper {
                             continue;
                         }
                         messages.add(m);
+                        LOGGER.trace("Added new message.");
                     } else {
                         continue;
                     }
@@ -95,6 +105,9 @@ public class CommandHelper {
         if (!isBackground) {
             util.sendWithTag(channel, user, config.getMessage("history.collection.complete") + " (Users: " + uniqueUsers.size() + ")");
         }
+        long endTime = System.nanoTime();
+        // TODO log new message count
+        LOGGER.info("History collection finished in " + (endTime - startTime) / 1000000 + "ms");
     }
 
     /**
@@ -118,6 +131,7 @@ public class CommandHelper {
         if (userFound) {
             userRepo.removeById(foundUser.getId());
             messageRepo.removeByUserId(foundUser.getId());
+            LOGGER.info("User has been removed");
             return config.getMessage("user.removed.success");
         } else {
             return config.getMessage("user.removed.failure");
@@ -142,6 +156,7 @@ public class CommandHelper {
         if (!alreadyExists) {
             LocalUser u = new LocalUser(user.getId());
             userRepo.insert(u);
+            LOGGER.info("New user added");
             boolean isBackground = true;
             history(channel, user, isBackground);
             return config.getMessage("user.added.success");
@@ -285,6 +300,7 @@ public class CommandHelper {
                 LocalMessage m = new LocalMessage(user.getId(), message.getId(), message.getContentRaw());
                 m.removeInvalidWords();
                 messageRepo.insert(m);
+                
             }
         }
 	}

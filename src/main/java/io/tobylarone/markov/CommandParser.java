@@ -92,7 +92,7 @@ public class CommandParser {
             userMarkov.add(new Markov(s));
         }
         long loadTimeEnd = System.nanoTime();
-        System.out.println("Markov Load Time: " + (loadTimeEnd - loadTimeStart) / 1000000 + "ms");
+        LOGGER.info("Markov load time: " + (loadTimeEnd - loadTimeStart) / 1000000 + "ms");
     }
 
     /**
@@ -199,7 +199,6 @@ public class CommandParser {
 
     /**
      * Sets the bot presence to idle
-     * TODO can probably remove this
      * 
      * @param e the message event
      * @param b if true, set to idle, if false, set to online
@@ -273,10 +272,13 @@ public class CommandParser {
             int counter = 0;
             int limit = markov.getUniqueWordCount() < 50000 ? markov.getUniqueWordCount() : 50000;
             String term = " " + searchTerm;
+            long startTime = System.nanoTime();
             while (!sentence.contains(term) && counter < limit) {
                 sentence = markov.generateSentence();
                 counter++;
             }
+            long endTime = System.nanoTime();
+            LOGGER.info("Took " + counter + " iterations to generate sentence with word " + searchTerm + " (" + (endTime - startTime) / 1000 + "μs)");
             if (sentence.contains(term)) {
                 util.sendWithTag(channel, user, sentence);
                 return;
@@ -307,21 +309,27 @@ public class CommandParser {
         String id = message.getAuthor().getId();
         String argId = args[1].replace("<@", "");
         argId = argId.replace(">", "");
-        int index = uniqueUsers.indexOf(targetName);
-        if (argId.equals(id)) {
-            String output = userMarkov.get(index).generateSentence(length);
-            util.sendWithTag(channel, user, output);
-            return;
-        } else {
-            LocalUser searchUser = userRepo.findByStringId(argId);
-            if (searchUser != null && searchUser.isOptIn()) {
+        if (uniqueUsers.contains(targetName)) {
+            int index = uniqueUsers.indexOf(targetName);
+            if (argId.equals(id)) {
                 String output = userMarkov.get(index).generateSentence(length);
                 util.sendWithTag(channel, user, output);
                 return;
+            } else {
+                LocalUser searchUser = userRepo.findByStringId(argId);
+                if (searchUser != null && searchUser.isOptIn()) {
+                    String output = userMarkov.get(index).generateSentence(length);
+                    util.sendWithTag(channel, user, output);
+                    return;
+                }
+                LOGGER.debug("Target user was not opted in.");
+                util.sendWithTag(channel, user, config.getMessage("tag.user.out"));
+                return;
             }
-            util.sendWithTag(channel, user, config.getMessage("tag.user.out"));
-            return;
         }
+        LOGGER.debug("Target user was not found.");
+        util.sendWithTag(channel, user, config.getMessage("tag.user.out"));
+        return;
     }
 
     /**
@@ -341,6 +349,7 @@ public class CommandParser {
             util.sendWithTag(channel, user, config.getMessage("request.limit.small"));
             return;
         }
+        LOGGER.debug("Generating message with limit " + limit);
         util.sendWithTag(channel, user, markov.generateSentence(limit));
         return;
     }

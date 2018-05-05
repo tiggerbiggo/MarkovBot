@@ -40,7 +40,7 @@ public class Util {
         eb.addBlankField(true);
 
         eb.addField("!markov @User", "Return phrase based \non target user \n(140 chars)", true);
-        eb.addField("!markov @user 120", "Return phrase based \non target user (max: 1500)", true);
+        eb.addField("!markov @user 120", "Return phrase based \non target user (max: 2000)", true);
         eb.addBlankField(true);
 
         eb.addField("!markov mad", "MARKO ROV GETS \nMAD (80 chars)", true);
