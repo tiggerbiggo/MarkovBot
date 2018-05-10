@@ -14,6 +14,7 @@ import io.tobylarone.markov.database.LocalMessageRepo;
 import io.tobylarone.markov.database.LocalUserRepo;
 import io.tobylarone.markov.model.LocalMessage;
 import io.tobylarone.markov.model.LocalUser;
+import io.tobylarone.markov.util.WordStat;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.MessageChannel;
@@ -45,7 +46,6 @@ public class CommandHelper {
 
     /**
      * Pulls historic messages from the provided discord channel
-     * TODO ignore messages that have attachments
      * 
      * @param channel the channel to retreive history from
      * @param user the calling user, used to send status update messages to
@@ -154,6 +154,7 @@ public class CommandHelper {
             }
         }
         if (!alreadyExists) {
+            util.sendWithTag(channel, user, config.getMessage("history.collection.started"));
             LocalUser u = new LocalUser(user.getId());
             userRepo.insert(u);
             LOGGER.info("New user added");
@@ -275,16 +276,23 @@ public class CommandHelper {
      * @param userCount total number of unique users
      * @return built message as {@link MessageEmbed}
      */
-    public MessageEmbed prepStatsMessage(LocalDateTime startTime, int wordCount, int userCount) {
+    public MessageEmbed prepStatsMessage(LocalDateTime startTime, int wordCount, int userCount, List<WordStat> topWords) {
         LocalDateTime now = LocalDateTime.now();
         Duration d = Duration.between(startTime, now);
         String uptime = d.toDays() + " days " + (d.toHours() % 60) + " hours " + (d.toMinutes() % 60) + " min";
         EmbedBuilder eb = new EmbedBuilder();
         eb.setColor(BLUE);
         eb.setTitle("Statistics");
-        eb.addField("Unique word count", String.valueOf(wordCount), false);
-        eb.addField("Total users", String.valueOf(userCount), false);
         eb.addField("Uptime", uptime, false);
+        eb.addField("Total users", String.valueOf(userCount), false);
+        eb.addField("Unique word count", String.valueOf(wordCount), false);
+        
+        String topWordsText = "";
+        for (int i = 0; i < 5; i++) {
+            topWordsText += "**" + (i + 1) + ":** " + topWords.get(i).getWord() + " (" + topWords.get(i).getCount() + ")\n";
+        }
+        
+        eb.addField("Top Five Words", topWordsText, false);
         return eb.build();
     }
 
@@ -292,17 +300,21 @@ public class CommandHelper {
      * Saves a message to the database
      * 
      * @param message the message to be saved
+     * @return true if message was saved, false if not saved
      */
-	public void saveMessage(Message message) {
+	public boolean saveMessage(Message message) {
         LocalUser user = userRepo.findByStringId(message.getAuthor().getId());
         if (user != null) {
             if (message.getAttachments().size() == 0 && message.getEmbeds().size() == 0) {
                 LocalMessage m = new LocalMessage(user.getId(), message.getId(), message.getContentRaw());
                 m.removeInvalidWords();
-                LOGGER.info("Saving message: " + message.getContentRaw());
-                messageRepo.insert(m);
-                
+                if (m.getMessage().trim() != "") { 
+                    LOGGER.info("Saving message: " + message.getContentRaw());
+                    messageRepo.insert(m);
+                    return true;
+                }
             }
         }
+        return false;
 	}
 }

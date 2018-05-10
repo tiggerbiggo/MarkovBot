@@ -1,10 +1,13 @@
 package io.tobylarone.markov;
 
+import java.util.Timer;
+
 import javax.security.auth.login.LoginException;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import io.tobylarone.markov.task.MessageTask;
 import net.dv8tion.jda.core.AccountType;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.JDABuilder;
@@ -18,6 +21,7 @@ import net.dv8tion.jda.core.hooks.ListenerAdapter;
  */
 public class App extends ListenerAdapter {
     private static final Logger LOGGER = LogManager.getLogger(App.class);
+    private static final int HOUR = 1000 * 60 * 60;
 
     private Util util;
     private CommandParser parser;
@@ -34,6 +38,10 @@ public class App extends ListenerAdapter {
         Config config = new Config();
         JDA j = new JDABuilder(AccountType.BOT).setToken(config.getProperty("token")).buildBlocking();
         j.addEventListener(app);
+        
+        Timer timer = new Timer();
+        MessageTask rt = new MessageTask(j);
+        timer.schedule(rt, 0, HOUR);
     }
     
     /**
@@ -75,7 +83,6 @@ public class App extends ListenerAdapter {
                         break;
                 }
             } else {
-                parser.converse(e);
                 parser.saveMessage(message);
             }
         }

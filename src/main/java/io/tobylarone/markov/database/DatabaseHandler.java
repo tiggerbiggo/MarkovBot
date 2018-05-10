@@ -235,5 +235,6 @@ public class DatabaseHandler {
         LOGGER.warn("SQL Exception: " + e.getMessage());
         LOGGER.warn("SQL State: " + e.getSQLState());
         LOGGER.warn("Error Code: " + e.getErrorCode());
+        e.printStackTrace();
     }
 }

@@ -3,7 +3,6 @@ package io.tobylarone.markov;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -27,6 +26,8 @@ public class CommandParser {
 
     private static final Logger LOGGER = LogManager.getLogger(CommandParser.class);
     
+    private static int saveMessageCounter;
+
     private Markov markov;
     private List<Markov> userMarkov;
     private List<String> uniqueUsers;
@@ -39,12 +40,9 @@ public class CommandParser {
 
     /**
      * CommandParser constructor
-     * 
-     * @param markov full chat chain
-     * @param userMarkov list of markov chains for individual users
-     * @param users list of unique users
      */
     public CommandParser() {
+        saveMessageCounter = 0;
         cmdHelper = new CommandHelper();
         userRepo = new LocalUserRepo();
         messageRepo = new LocalMessageRepo();        
@@ -104,22 +102,6 @@ public class CommandParser {
         LOGGER.info("Bot owner: " + isBotOwner(e));
         LOGGER.info("Server owner: " + isServerOwner(e));
         util.sendWithTag(e.getChannel(), e.getAuthor(), markovSentence);
-    }
-    
-    /**
-     * Function to randomly send a generated sentence into the
-     * chat. Message will be generated and sent only 1 in 20 times
-     * 
-     * @param e The message received
-     */
-    public void converse(MessageReceivedEvent e) {
-        Random rand = new Random();
-        int randomChance = rand.nextInt(20);
-        if (randomChance == 10) {
-            int randomLength = rand.nextInt(1500 + 50) + 50;
-            String markovSentence = markov.generateSentence(randomLength);
-            util.send(e.getChannel(), markovSentence);
-        }
     }
 
     /**
@@ -192,7 +174,7 @@ public class CommandParser {
                 return;
             case "stats":
                 e.getJDA().getPresence().setGame(Game.playing("Ping: " + e.getJDA().getPing() + "ms"));
-                util.sendEmbed(channel, cmdHelper.prepStatsMessage(startTime, markov.getUniqueWordCount(), uniqueUsers.size()));
+                util.sendEmbed(channel, cmdHelper.prepStatsMessage(startTime, markov.getUniqueWordCount(), uniqueUsers.size(), markov.getTopWords()));
                 return;
             case "mad":
                 util.sendWithTag(channel, user, markov.generateSentence(80).toUpperCase() + "!");
@@ -389,6 +371,12 @@ public class CommandParser {
      * @param message the message to save
      */
 	public void saveMessage(Message message) {
-        cmdHelper.saveMessage(message);
+        if (cmdHelper.saveMessage(message)) {
+            saveMessageCounter++;
+            if (saveMessageCounter % 50 == 0) {
+                saveMessageCounter = 0;
+                rebuildIndex();
+            }
+        }
 	}
 }

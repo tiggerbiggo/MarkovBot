@@ -53,6 +53,9 @@ public class LocalUserRepo extends DatabaseWrapper<LocalUser>{
                 boolean isOptIn = result.getBoolean("is_opt_in");
                 user = new LocalUser(resid, discordId, isOptIn);
             }
+        } catch (NullPointerException e) {
+            getDb().closeQuery();
+            return null;
         } catch (SQLException e) {
             e.printStackTrace();
         }

@@ -2,6 +2,7 @@ package io.tobylarone.markov;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Random;
@@ -9,6 +10,8 @@ import java.util.stream.Stream;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import io.tobylarone.markov.util.WordStat;
 
 /**
  * Markov class
@@ -21,6 +24,7 @@ public class Markov {
     private Hashtable<String, ArrayList<String>> index;
     private Random rand = new Random();
     private ArrayList<String> uniqueWords = new ArrayList<>();
+    private List<WordStat> uniqueWordsStats;
     
     /**
      * Markov constructor
@@ -31,6 +35,7 @@ public class Markov {
     public Markov(String input) {
         this.input = input.split(" ");
         index = new Hashtable<>();
+        uniqueWordsStats = new ArrayList<>();
         buildIndex();
     }
 
@@ -53,10 +58,8 @@ public class Markov {
                     LOGGER.trace("Invalid word skipped: " + nextWord);
                     continue;
                 }
-    
-                if (!uniqueWords.contains(word)) {
-                    uniqueWords.add(word);
-                }
+
+                updateUniqueWords(word);
     
                 ArrayList<String> chain = index.get(word);
                 if (chain == null) {
@@ -71,13 +74,29 @@ public class Markov {
                 if (!isValid(word)) {
                     continue;
                 }
-                if (!uniqueWords.contains(word)) {
-                    uniqueWords.add(word);
-                }
+
+                updateUniqueWords(word);
+
                 index.put(word, new ArrayList<String>());
             }
         }
         LOGGER.debug("Index created");
+    }
+
+    /**
+     * 
+     */
+    private void updateUniqueWords(String word) {
+        if (!uniqueWords.contains(word)) {
+            uniqueWords.add(word);
+            uniqueWordsStats.add(new WordStat(word));
+        } else {
+            for (WordStat w : uniqueWordsStats) {
+                if (w.getWord().equals(word)) {
+                    w.increment();
+                }
+            }
+        }
     }
 
     /**
@@ -151,6 +170,12 @@ public class Markov {
      */
     public int getUniqueWordCount() {
         return uniqueWords.size();
+    }
+
+    public List<WordStat> getTopWords() {
+        List<WordStat> temp = uniqueWordsStats;
+        Collections.sort(temp);
+        return temp;
     }
 
     /**
