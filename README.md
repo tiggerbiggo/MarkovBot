@@ -2,10 +2,17 @@
 
 Discord bot to generate sentences using markov chains based on chat history
 
-## Roadmap features
+## Features & Roadmap
+
+#### Key
+| Marker | Description |
+|--------| ----------- |
+| [ ] | Todo |
+| [🚶] | In progress |
+| [x] | Complete |
 
 - [x] Move to storing chat history in database. Allow updating and re-indexing
-- [ ] Move to jooq
+- [🚶] Move to jooq
 - [ ] Implement some usage rate limiting to reduce spam
 - [ ] Voting system for generated sentences based on reaction count
 - [ ] Generate sentences based on music artists
