@@ -28,15 +28,24 @@ public class MessageTask extends TimerTask {
         messageRepo = new LocalMessageRepo();
     }
 
+    /**
+     * Task run method, loads a global markov chain and
+     * sends the message to channel
+     */
 	@Override
 	public void run() {
 
-        Markov markov = reloadMarkov();
+        Markov markov = loadMarkov();
         // TODO read channel from db
 		util.send(jda.getTextChannelById("433946564218847235"), markov.generateSentence());
     }
     
-    private Markov reloadMarkov() {
+    /**
+     * Load up to date messages 
+     * 
+     * @return an updated markov chain
+     */
+    private Markov loadMarkov() {
         List<String> chatList = new ArrayList<>();
         List<LocalMessage> messages = messageRepo.findAll();
 

@@ -28,13 +28,9 @@ ALTER TABLE `users`
 ALTER TABLE `messages`
     ADD PRIMARY KEY (`id`),
     ADD UNIQUE KEY `id` (`id`);
-    --ADD KEY `user_fk` (`user_id`);
 
 ALTER TABLE `users`
     MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=0;
 
 ALTER TABLE `messages`
     MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=0;
-
---ALTER TABLE `messages`
-    --ADD CONSTRAINT `user_fk` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);

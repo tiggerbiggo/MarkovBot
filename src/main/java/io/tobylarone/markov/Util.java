@@ -12,7 +12,6 @@ import net.dv8tion.jda.core.entities.User;
 
 /**
  * Util class for sending various message types to discord channels
- *
  */
 public class Util {
     private static final Logger LOGGER = LogManager.getLogger(Util.class);

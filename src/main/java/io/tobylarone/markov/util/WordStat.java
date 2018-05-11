@@ -8,19 +8,17 @@ public class WordStat implements Comparable<WordStat> {
     private String word;
     private int count;
 
+	/**
+	 * WordStat constructor
+	 */
     public WordStat(String word) {
         this.word = word;
         this.count = 1;
     }
 
-    /**
-     * WordStat constructor
-     */
-    public WordStat(String word, int count) {
-        this.word = word;
-        this.count = count;
-    }
-
+	/**
+	 * Increment the counter for the word
+	 */
     public void increment() {
         this.count++;
     }

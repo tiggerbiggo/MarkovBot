@@ -112,7 +112,6 @@ public class CommandHelper {
 
     /**
      * Removes a user from the database
-     * TODO remove all messages associated with user
      * 
      * @param user the user to remove
      * @return string of success or failure
@@ -289,7 +288,7 @@ public class CommandHelper {
         
         String topWordsText = "";
         for (int i = 0; i < 5; i++) {
-            topWordsText += "**" + (i + 1) + ":** " + topWords.get(i).getWord() + " (" + topWords.get(i).getCount() + ")\n";
+            topWordsText += "**" + topWords.get(i).getWord() + "** (" + topWords.get(i).getCount() + ")\n";
         }
         
         eb.addField("Top Five Words", topWordsText, false);
