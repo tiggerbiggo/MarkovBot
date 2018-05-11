@@ -1,9 +1,10 @@
 package io.tobylarone.markov.database;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.jooq.Record;
+import org.jooq.Result;
 
 import io.tobylarone.markov.model.LocalUser;
 
@@ -21,22 +22,16 @@ public class LocalUserRepo extends DatabaseWrapper<LocalUser>{
 
 	@Override
 	public List<LocalUser> findAll() {
-		List<LocalUser> users = new ArrayList<>();
-        String[] fields = {"*"};
-        ResultSet results = getDb().select("users", fields);
-        try {
-			while(results.next()) {
-                int id = results.getInt("id");
-                String discordId = results.getString("discord_id");
-                boolean isOptIn = results.getBoolean("is_opt_in");
-                LocalUser user = new LocalUser(id, discordId, isOptIn);
-                users.add(user);
-            }
-		} catch (SQLException e) {
-			e.printStackTrace();
-        }
-        
-        getDb().closeQuery();
+		List<LocalUser> users = new ArrayList<>();    
+        Result<Record> results = getDb().select("users");
+
+		for (Record r : results) {
+			int id = r.getValue("id", Integer.class);
+			String discordId = r.getValue("discord_id", String.class);
+			boolean isOptIn = r.getValue("is_opt_in", Boolean.class);
+			LocalUser user = new LocalUser(id, discordId, isOptIn);
+			users.add(user);
+		}
 
         return users;
 	}
@@ -44,23 +39,18 @@ public class LocalUserRepo extends DatabaseWrapper<LocalUser>{
 	@Override
 	public LocalUser findByStringId(String id) {
         LocalUser user = null;
-        String[] fields = {"*"};
-        ResultSet result = getDb().selectId("users", fields, "discord_id", id);
-        try {
-            while(result.next()) {
-                int resid = result.getInt("id");
-                String discordId = result.getString("discord_id");
-                boolean isOptIn = result.getBoolean("is_opt_in");
-                user = new LocalUser(resid, discordId, isOptIn);
-            }
-        } catch (NullPointerException e) {
-            getDb().closeQuery();
+        Result<Record> result = getDb().selectBy("users", "discord_id", id);
+
+        if (result.size() != 1) {
             return null;
-        } catch (SQLException e) {
-            e.printStackTrace();
         }
 
-        getDb().closeQuery();
+        for (Record r : result) {
+            int resid = r.getValue("id", Integer.class);
+            String discordId = r.getValue("discord_id", String.class);
+            boolean isOptIn = r.getValue("is_opt_in", Boolean.class);
+            user = new LocalUser(resid, discordId, isOptIn);
+        }
 
         return user;
     }
@@ -81,20 +71,18 @@ public class LocalUserRepo extends DatabaseWrapper<LocalUser>{
 	@Override
 	public LocalUser findById(int id) {
         LocalUser user = null;
-        String[] fields = {"*"};
-        ResultSet result = getDb().selectId("users", fields, "id", id);
-        try {
-            while (result.next()) {
-                int resid = result.getInt("id");
-                String discordId = result.getString("discord_id");
-                boolean isOptIn = result.getBoolean("is_opt_in");
-                user = new LocalUser(resid, discordId, isOptIn);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
+        Result<Record> result = getDb().selectBy("users", "id", id);
+
+        if (result.size() != 1) {
+            return null;
         }
 
-        getDb().closeQuery();
+        for (Record r : result) {
+            int resid = r.getValue("id", Integer.class);
+            String discordId = r.getValue("discord_id", String.class);
+            boolean isOptIn = r.getValue("is_opt_in", Boolean.class);
+            user = new LocalUser(resid, discordId, isOptIn);
+        }
 
         return user;
 	}

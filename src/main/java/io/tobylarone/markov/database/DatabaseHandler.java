@@ -2,14 +2,19 @@ package io.tobylarone.markov.database;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jooq.DSLContext;
+import org.jooq.Record;
+import org.jooq.Result;
+import org.jooq.SQLDialect;
+import org.jooq.exception.DataAccessException;
+import org.jooq.impl.DSL;
+
+import static org.jooq.impl.DSL.*;
 
 import io.tobylarone.markov.Config;
 import io.tobylarone.markov.model.LocalMessage;
@@ -22,8 +27,6 @@ public class DatabaseHandler {
 
     private static final Logger LOGGER = LogManager.getLogger(DatabaseHandler.class);
     private Connection conn;
-    private PreparedStatement ps;
-    private ResultSet r;
 
     /**
      * DatabaseHandler constructor.
@@ -40,8 +43,9 @@ public class DatabaseHandler {
             conn = DriverManager.getConnection("jdbc:mysql://" + host + "/" + dbname + "?"
                                             + "user=" + dbuser + "&password=" + dbpass
                                             + "&useSSL=" + dbssl
-                                            + "&useUnicode=yes&characterEncoding=UTF-8");
-            r = null;
+                                            + "&useUnicode=yes"
+                                            + "&characterEncoding=UTF-8"
+                                            + "&autoReconnect=true");
         } catch (SQLException e) {
             printException(e);
         }
@@ -50,70 +54,26 @@ public class DatabaseHandler {
     /**
      * 
      */
-    public ResultSet selectId(String table, String[] inputFields, String targetField, Object id) {
-        try {
-            String fields = String.join(", ", inputFields);
-            String query = "SELECT " + fields + " FROM " + table 
-            + " WHERE " + targetField + "= ?";
-            
-            ps = conn.prepareStatement(query);
-            ps.setObject(1, id);
-            r = ps.executeQuery();
-
-        } catch (SQLException e) {
-            printException(e);
-        }
-        return r;
+    public Result<Record> selectBy(String table, String field, Object value) {
+        DSLContext create = DSL.using(conn, SQLDialect.MYSQL);
+        Result<Record> result = create.select().from(table(table)).where(field(field).eq(value)).fetch();
+        return result;
     }
 
     /**
      * 
      */
-    public ResultSet select(String table, String[] inputFields) {
-        try {
-            String fields = String.join(", ", inputFields);
-            String query = "SELECT " + fields + " FROM " + table;
-            ps = conn.prepareStatement(query);
-
-            r = ps.executeQuery();
-
-        } catch (SQLException e) {
-            printException(e);
-        }
-        return r;
+    public Result<Record> select(String table) {
+        DSLContext create = DSL.using(conn, SQLDialect.MYSQL);
+        Result<Record> result = create.select().from(table(table)).fetch();
+        return result;
     }
 
     public <T> void insertBatch(String table, List<T> list) {
-        String query = "";
-        if (list.get(0) instanceof LocalMessage) {
-            query = "INSERT INTO " + table + " (user_id, message, discord_message_id) VALUES (?, ?, ?)";
-        }
-        try {
-            ps = conn.prepareStatement(query);
-            int counter = 0;
-            for (T item : list) {
-                LocalMessage m = (LocalMessage) item;
-                if (item instanceof LocalMessage) {
-                    ps.setInt(1, m.getUserId());
-                    ps.setString(2, m.getMessage());
-                    ps.setString(3, m.getDiscordMessageId());
-                }
-                ps.addBatch();
-                counter++;
-                if (counter % 1000 == 0 || counter == list.size()) {
-                    ps.executeBatch();
-                }
-            }
-        } catch (SQLException e) {
-            printException(e);
-        } finally {
-            if (ps != null) {
-                try {
-                    ps.close();
-                } catch (SQLException e) {
-                    printException(e);
-                }
-            }
+        // DSLContext create = DSL.using(conn, SQLDialect.MYSQL);
+        list = list.subList(1, list.size());
+        for (T item : list) {
+            insert(table, item);
         }
     }
 
@@ -121,34 +81,21 @@ public class DatabaseHandler {
      * 
      */
     public <T> void insert(String table, T object) {
-        String query = "";
+        DSLContext create = DSL.using(conn, SQLDialect.MYSQL);
         try {
             if (object instanceof LocalUser) {
-                query = "INSERT INTO " + table + " (discord_id, is_opt_in) VALUES (?, ?)";
-                ps = conn.prepareStatement(query);
-                LocalUser user = (LocalUser) object;
-                ps.setString(1, user.getDiscordId());
-                ps.setBoolean(2, user.isOptIn());
-                ps.executeUpdate();
+                LocalUser u = (LocalUser) object;
+                create.insertInto(table(table), field("discord_id"), field("is_opt_in"))
+                    .values(u.getDiscordId(), u.isOptIn())
+                    .execute();
             } else if (object instanceof LocalMessage) {
-                query = "INSERT INTO " + table + " (user_id, message, discord_message_id) VALUES (?, ?, ?)";
-                ps = conn.prepareStatement(query);
-                LocalMessage message = (LocalMessage) object;
-                ps.setInt(1, message.getUserId());
-                ps.setString(2, message.getMessage());
-                ps.setString(3, message.getDiscordMessageId());
-                ps.executeUpdate();
+                LocalMessage m = (LocalMessage) object;
+                create.insertInto(table(table), field("user_id"), field("message"), field("discord_message_id"))
+                    .values(m.getUserId(), m.getMessage(), m.getDiscordMessageId())
+                    .execute();
             }
-        } catch (SQLException e) {
-            printException(e);
-        } finally {
-            if (ps != null) {
-                try {
-                    ps.close();
-                } catch (SQLException e) {
-                    printException(e);
-                }
-            }
+        } catch (DataAccessException e) {
+            // TODO log @ trace
         }
     }
 
@@ -156,24 +103,14 @@ public class DatabaseHandler {
      * 
      */
     public <T, U> void updateByField(String table, String findField, T findValue, String updateField, U updateValue) {
-        String query = "";
+        DSLContext create = DSL.using(conn, SQLDialect.MYSQL);
         try {
-            query = "UPDATE " + table + " SET " + updateField + " = ? "
-                    + "WHERE " + findField + " = ?";
-            ps = conn.prepareStatement(query);
-            ps.setObject(1, updateValue);
-            ps.setObject(2, findValue);
-            ps.executeUpdate();
-        } catch (SQLException e) {
-            printException(e);
-        } finally {
-            if (ps != null) {
-                try {
-                    ps.close();
-                } catch (SQLException e) {
-                    printException(e);
-                }
-            }
+            create.update(table(table))
+                .set(field(updateField), updateValue)
+                .where(field(findField).eq(findValue))
+                .execute();
+        } catch (DataAccessException e) {
+            // TODO log @ trace
         }
     }
 
@@ -181,36 +118,13 @@ public class DatabaseHandler {
      * 
      */
     public void removeByField(String table, String field, Object object) {
-        String query = "";
+        DSLContext create = DSL.using(conn, SQLDialect.MYSQL);
         try {
-            query = "DELETE FROM " + table + " WHERE " + field + " = ?";
-            ps = conn.prepareStatement(query);
-            ps.setObject(1, object);
-            ps.executeUpdate();
-        } catch (SQLException e) {
-            printException(e);
-        } finally {
-            if (ps != null) {
-                try {
-                    ps.close();
-                } catch (SQLException e) {
-                    printException(e);
-                }
-            }
-        }
-    }
-
-    /**
-     * Closes {@link ResultSet} and {@link Statement}
-     */
-    public void closeQuery() {
-        if (r != null) {
-            try {
-                r.close();
-            } catch (SQLException e) {
-                printException(e);
-            }
-            r = null;
+            create.delete(table(table))
+                .where(field(field).eq(object))
+                .execute();
+        } catch (DataAccessException e) {
+            // TODO log @ trace
         }
     }
 

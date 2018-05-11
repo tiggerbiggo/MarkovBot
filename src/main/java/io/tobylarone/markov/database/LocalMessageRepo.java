@@ -1,9 +1,10 @@
 package io.tobylarone.markov.database;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.jooq.Record;
+import org.jooq.Result;
 
 import io.tobylarone.markov.model.LocalMessage;
 
@@ -21,42 +22,38 @@ public class LocalMessageRepo extends DatabaseWrapper<LocalMessage> {
 
 	@Override
 	public LocalMessage findByStringId(String id) {
-		LocalMessage user = null;
-		String[] fields = {"*"};
-		ResultSet result = getDb().selectId("users", fields, "discord_message_id", id);
-		try {
-			while (result.next()) {
-				int resid = result.getInt("id");
-				int userId = result.getInt("user_id");
-				String message = result.getString("message");
-				String discordMessageId = result.getString("discord_message_id");
-				user = new LocalMessage(resid, userId, message, discordMessageId);
-			}
-		} catch (SQLException e) {
-			e.printStackTrace();
+		LocalMessage message = null;
+		Result<Record> result = getDb().selectBy("messages", "discord_message_id", id);
+
+		if (result.size() != 1) {
+			return null;
 		}
-		getDb().closeQuery();
-		return user;
+		for (Record r : result) {
+			int resid = r.getValue("id", Integer.class);
+			int userId = r.getValue("user_id", Integer.class);
+			String messageText = r.getValue("message", String.class);
+			String discordMessageId = r.getValue("discord_message_id", String.class);
+
+			message = new LocalMessage(resid, userId, messageText, discordMessageId);
+		}
+
+		return message;
 	}
 
 	@Override
 	public List<LocalMessage> findAll() {
 		List<LocalMessage> messages = new ArrayList<>();
-		String[] fields = {"*"};
-		ResultSet results = getDb().select("messages", fields);
-		try {
-			while (results.next()) {
-				int id = results.getInt("id");
-				int userId = results.getInt("user_id");
-				String discordMessageId = results.getString("discord_message_id");
-				String messageValue = results.getString("message");
-				LocalMessage message = new LocalMessage(id, userId, discordMessageId, messageValue);
-				messages.add(message);
-			}
-		} catch (SQLException e) {
-			e.printStackTrace();
+		Result<Record> results = getDb().select("messages");
+
+		for (Record r : results) {
+			int id = r.getValue("id", Integer.class);
+			int userId = r.getValue("user_id", Integer.class);
+			String discordMessageId = r.getValue("discord_message_id", String.class);
+			String messageValue = r.getValue("message", String.class);
+			LocalMessage message = new LocalMessage(id, userId, discordMessageId, messageValue);
+			messages.add(message);
 		}
-		getDb().closeQuery();
+
 		return messages;
 	}
 
