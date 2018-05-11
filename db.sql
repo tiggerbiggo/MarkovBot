@@ -4,6 +4,8 @@ DEFAULT COLLATE utf8mb4_unicode_ci;
 
 SET default_storage_engine = INNODB;
 
+ALTER DATABASE markov CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
 DROP TABLE IF EXISTS `users`;
 
 CREATE TABLE `users` (

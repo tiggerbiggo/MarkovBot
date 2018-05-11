@@ -307,7 +307,8 @@ public class CommandHelper {
             if (message.getAttachments().size() == 0 && message.getEmbeds().size() == 0) {
                 LocalMessage m = new LocalMessage(user.getId(), message.getId(), message.getContentRaw());
                 m.removeInvalidWords();
-                if (m.getMessage().trim() != "") { 
+                m.setMessage(m.getMessage().trim());
+                if (m.getMessage() != "") {
                     LOGGER.info("Saving message: " + message.getContentRaw());
                     messageRepo.insert(m);
                     return true;

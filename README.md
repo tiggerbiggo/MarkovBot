@@ -13,13 +13,14 @@ Discord bot to generate sentences using markov chains based on chat history
 
 - [x] Move to storing chat history in database. Allow updating and re-indexing
 - [x] Move to jooq
+- [ ] 🚶 Reduce memory usage
 - [ ] Implement some usage rate limiting to reduce spam
 - [ ] Voting system for generated sentences based on reaction count
 - [ ] Generate sentences based on music artists
 
 ## About
 
-* Requires maven and mysql
+* Requires maven and mysql (make sure to set char sets to utf8mb4 and collation to utf8mb4_unicode_ci)
 * Uses [JDA](https://github.com/DV8FromTheWorld/JDA)
 * Requires a `config.properties` file in resources
 ```
