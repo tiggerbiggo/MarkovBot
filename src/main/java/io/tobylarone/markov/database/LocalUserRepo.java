@@ -17,9 +17,13 @@ public class LocalUserRepo extends DatabaseWrapper<LocalUser>{
      * LocalUserRepo Constructor
      */
     public LocalUserRepo() {
-    
     }
 
+    /**
+	 * Retrieve all users
+	 * 
+	 * @return the list of users
+	 */
 	@Override
 	public List<LocalUser> findAll() {
 		List<LocalUser> users = new ArrayList<>();    
@@ -36,6 +40,12 @@ public class LocalUserRepo extends DatabaseWrapper<LocalUser>{
         return users;
 	}
 
+    /**
+	 * Find user by discord id
+	 * 
+	 * @param id the discord id to search for
+	 * @return the user, or if not found, null
+	 */
 	@Override
 	public LocalUser findByStringId(String id) {
         LocalUser user = null;
@@ -55,19 +65,41 @@ public class LocalUserRepo extends DatabaseWrapper<LocalUser>{
         return user;
     }
 
+    /**
+     * Insert a user into the database
+     * 
+     * @param t the user to insert
+     */
 	@Override
 	public void insert(LocalUser t) {
 		getDb().insert("users", t);
     }
     
+    /**
+     * Remove a user by id
+     * 
+     * @param id the id of the user
+     */
     public void removeById(int id) {
         getDb().removeByField("users", "id", id);
     }
 
+    /**
+     * Update the status of a users Opt-in
+     * 
+     * @param discordID the discord id of the user
+     * @param isOptIn the value of opt-in to set
+     */
 	public void updateOptIn(String discordId, boolean isOptIn) {
 		getDb().updateByField("users", "discord_id", discordId, "is_opt_in", isOptIn);
 	}
 
+    /**
+     * Find user by id
+     * 
+     * @param id the id of the user to find
+     * @return the user, or if not found, null
+     */
 	@Override
 	public LocalUser findById(int id) {
         LocalUser user = null;

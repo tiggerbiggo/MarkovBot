@@ -8,11 +8,11 @@ Discord bot to generate sentences using markov chains based on chat history
 | Marker | Description |
 |--------| ----------- |
 | [ ] | Todo |
-| [🚶] | In progress |
+|  🚶  | In progress |
 | [x] | Complete |
 
 - [x] Move to storing chat history in database. Allow updating and re-indexing
-- [🚶] Move to jooq
+- [x] Move to jooq
 - [ ] Implement some usage rate limiting to reduce spam
 - [ ] Voting system for generated sentences based on reaction count
 - [ ] Generate sentences based on music artists

@@ -52,7 +52,11 @@ public class DatabaseHandler {
     }
 
     /**
+     * Select row by column equality
      * 
+     * @param table the table to select from
+     * @param field the field in the where clause
+     * @param value the equality value of the where clause
      */
     public Result<Record> selectBy(String table, String field, Object value) {
         DSLContext create = DSL.using(conn, SQLDialect.MYSQL);
@@ -61,7 +65,9 @@ public class DatabaseHandler {
     }
 
     /**
+     * Select all rows from table
      * 
+     * @param table the table to select from 
      */
     public Result<Record> select(String table) {
         DSLContext create = DSL.using(conn, SQLDialect.MYSQL);
@@ -69,6 +75,12 @@ public class DatabaseHandler {
         return result;
     }
 
+    /**
+     * Insert a list of objects
+     * 
+     * @param table the table to insert into
+     * @param list the list of objects to insert
+     */
     public <T> void insertBatch(String table, List<T> list) {
         // DSLContext create = DSL.using(conn, SQLDialect.MYSQL);
         list = list.subList(1, list.size());
@@ -78,7 +90,10 @@ public class DatabaseHandler {
     }
 
     /**
+     * Insert new row into table
      * 
+     * @param table the table to insert into
+     * @param object the object to insert
      */
     public <T> void insert(String table, T object) {
         DSLContext create = DSL.using(conn, SQLDialect.MYSQL);
@@ -95,12 +110,19 @@ public class DatabaseHandler {
                     .execute();
             }
         } catch (DataAccessException e) {
-            // TODO log @ trace
+            LOGGER.warn("Error Inserting:" + e.getMessage());
+            LOGGER.warn(e.getStackTrace());
         }
     }
 
     /**
+     * Update rows by a specified field
      * 
+     * @param table the table to update
+     * @param findField the field in the where clause
+     * @param findValue the where clause equality
+     * @param updateField the field to update
+     * @param updateValue the new value
      */
     public <T, U> void updateByField(String table, String findField, T findValue, String updateField, U updateValue) {
         DSLContext create = DSL.using(conn, SQLDialect.MYSQL);
@@ -110,7 +132,8 @@ public class DatabaseHandler {
                 .where(field(findField).eq(findValue))
                 .execute();
         } catch (DataAccessException e) {
-            // TODO log @ trace
+            LOGGER.warn("Error Updating:" + e.getMessage());
+            LOGGER.warn(e.getStackTrace());
         }
     }
 
@@ -124,7 +147,8 @@ public class DatabaseHandler {
                 .where(field(field).eq(object))
                 .execute();
         } catch (DataAccessException e) {
-            // TODO log @ trace
+            LOGGER.warn("Error Removing:" + e.getMessage());
+            LOGGER.warn(e.getStackTrace());
         }
     }
 
